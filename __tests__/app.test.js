@@ -1,5 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
+require('jest-sorted');
 const db = require('../db/connection');
 const seed = require('../db/seeds/seed');
 const testData = require('../db/data/test-data/index');
@@ -43,7 +44,7 @@ describe('GET /api/topics', () => {
     });
 });
 
-describe.only("GET /api/articles/:articles_id", () => {
+describe("GET /api/articles/:articles_id", () => {
     it("200: responds with article object", () => {
         return request(app)
         .get("/api/articles/1")
@@ -82,4 +83,125 @@ describe.only("GET /api/articles/:articles_id", () => {
             expect(msg).toBe("no article found for article_id 99999999");
         });
     });
+});
+
+describe("GET /api/articles", () => {
+    describe("Queries: sort_by, order and topic filters", () => {
+        it("200: should respond with array sorted by article_id, order default order is descending", () => {
+        return request(app)
+            .get("/api/articles?sort_by=article_id")
+            .expect(200)
+            .then(({ body }) => {
+            const { articles } = body;
+            expect(articles).toBeInstanceOf(Array);
+            expect(articles).toBeSortedBy("article_id", { descending: true });
+            });
+        });
+        it("200: responds with array ordered by ascending when order=asc", () => {
+        return request(app)
+            .get("/api/articles?order=asc")
+            .expect(200)
+            .then(({ body }) => {
+                const { articles } = body;
+                expect(articles).toBeInstanceOf(Array);
+                expect(articles).toBeSortedBy("created_at", { ascending: true });
+            });
+        });
+        it("200: should respond with array of one cat article object when filtered by topic cats", () => {
+        return request(app)
+            .get("/api/articles?topic=cats")
+            .expect(200)
+            .then(({ body }) => {
+            const { articles } = body;
+            expect(articles).toHaveLength(1);
+            expect(articles[0]).toEqual(
+                expect.objectContaining({
+                article_id: 5,
+                title: "UNCOVERED: catspiracy to bring down democracy",
+                topic: "cats",
+                author: "rogersop",
+                body: "Bastet walks amongst us, and the cats are taking arms!",
+                comment_count: "2",
+                created_at: expect.any(String),
+                article_img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                votes: 0,
+                })
+            );
+        });
+    });
+        it("200: for multiple queries, should respond with an array of mitch article objects, sorted by article_id with order ascending", () => {
+        return request(app)
+            .get("/api/articles?topic=mitch&sort_by=article_id&order=asc")
+            .expect(200)
+            .then(({ body }) => {
+            const { articles } = body;
+            expect(articles).toBeInstanceOf(Array);
+            expect(articles).toBeSortedBy("article_id", { ascending: true });
+            articles.forEach((article) => expect(article.topic).toBe("mitch"));
+            });
+        });
+        it("400: stops invalid sort_by queries and responds with bad request", () => {
+        return request(app)
+            .get("/api/articles?sort_by=quantity")
+            .expect(400)
+            .then(({ body }) => {
+            const { msg } = body;
+            expect(msg).toBe("bad request: cannot sort by 'quantity'");
+            });
+        });
+        it("400: stops invalid order queries and responds with bad request", () => {
+        return request(app)
+            .get("/api/articles?order=rupaul")
+            .expect(400)
+            .then(({ body }) => {
+            const { msg } = body;
+            expect(msg).toBe(
+                "bad request: cannot order by 'rupaul', ASC or DESC only"
+            );
+        });
+    });
+        it("400: stops invalid filter types and responds with bad request", () => {
+        return request(app)
+            .get("/api/articles?positive=10")
+            .expect(400)
+            .then(({ body }) => {
+            const { msg } = body;
+            expect(msg).toBe("bad request");
+            });
+        });
+    });
+        it("200: responds with an array of article objects", () => {
+            return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then(({ body }) => {
+            const { articles } = body;
+            expect(articles).toHaveLength(13);
+            expect(articles).toBeInstanceOf(Array);
+            articles.forEach((article) => {
+                expect(article).toEqual(
+                expect.objectContaining({
+                    article_id: expect.any(Number),
+                    title: expect.any(String),
+                    topic: expect.any(String),
+                    author: expect.any(String),
+                    body: expect.any(String),
+                    created_at: expect.any(String),
+                    votes: expect.any(Number),
+                    comment_count: expect.any(String),
+                    article_img_url: expect.any(String),
+                    })
+                );
+            });
+        });
+    });
+    it("404: responds with not found if given wrong path", () => {
+        return request(app)
+        .get("/api/barnacles")
+        .expect(404)
+        .then(({ body }) => {
+            const { msg } = body;
+            expect(msg).toBe("not found");
+            });
+        });
 });
