@@ -205,3 +205,55 @@ describe("GET /api/articles", () => {
             });
         });
 });
+
+describe("GET /api/articles/:article_id/comments", () => {
+    it("200: responds with an array of comment objects", () => {
+        return request(app)
+            .get("/api/articles/1/comments")
+            .expect(200)
+            .then(({ body }) => {
+            const { comments } = body;
+            expect(comments).toBeInstanceOf(Array);
+            expect(comments).toHaveLength(11);
+            comments.forEach((comment) => {
+            expect(comment).toEqual(
+                expect.objectContaining({
+                article_id: 1,
+                comment_id: expect.any(Number),
+                votes: expect.any(Number),
+                created_at: expect.any(String),
+                author: expect.any(String),
+                body: expect.any(String),
+                })
+            );
+        });
+        });
+    });
+    it("400: responds with bad request if given wrong article_id data type", () => {
+        return request(app)
+            .get("/api/articles/article_5/comments")
+            .expect(400)
+            .then(({ body }) => {
+                const { msg } = body;
+                expect(msg).toBe("bad request");
+            });
+        });
+    it("404: responds with invalid filepath if given wrong article_id", () => {
+        return request(app)
+            .get("/api/articles/99999999/comments")
+            .expect(404)
+            .then(({ body }) => {
+            const { msg } = body;
+            expect(msg).toBe("no comments found for article_id 99999999");
+            });
+        });
+    it("404: responds with not found if given wrong filepath", () => {
+        return request(app)
+            .get("/api/articles/1/commentttss")
+            .expect(404)
+            .then(({ body }) => {
+                const { msg } = body;
+                expect(msg).toBe("not found");
+            });
+        });
+    });
