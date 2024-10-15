@@ -57,7 +57,7 @@ exports.selectArticles = (order = "DESC", sort_by = "created_at", filter) => {
         queryValues.push(...Object.values(filter));
     }
 
-    queryStr += ` GROUP BY articles.article_id ORDER BY ${sort_by} ${capitalsOrder}`;
+    queryStr += `GROUP BY articles.article_id ORDER BY ${sort_by} ${capitalsOrder}`;
 
     return db.query(queryStr, queryValues).then((result) => {
         if (!result.rows.length) {
@@ -67,5 +67,27 @@ exports.selectArticles = (order = "DESC", sort_by = "created_at", filter) => {
             });
         }
         return result.rows;
+    });
+};
+
+exports.updateArticle = (article_id, input) => {
+    const { inc_votes } = input;
+
+    if (inc_votes === undefined || typeof inc_votes !== 'number') {
+        return Promise.reject({ status: 400, msg: 'bad request' });
+    }
+
+    const queryValues = [inc_votes, article_id];
+    const queryStr = `
+        UPDATE articles 
+        SET votes = votes + $1
+        WHERE article_id = $2
+        RETURNING *`;
+
+    return db.query(queryStr, queryValues).then(({ rows }) => {
+        if (!rows.length) {
+            return Promise.reject({ status: 404, msg: 'article not found' });
+        }
+        return rows[0];
     });
 };

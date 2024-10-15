@@ -307,7 +307,7 @@ describe("POST /api/articles/:article_id/comments", () => {
             expect(msg).toBe("bad request");
         });
     });
-    it("400: invalid article_id, responds with bad request ", () => {
+    it("404: invalid article_id, responds with bad request ", () => {
         const newComment = {};
         return request(app)
         .post("/api/articles/9999999/comments")
@@ -318,7 +318,7 @@ describe("POST /api/articles/:article_id/comments", () => {
             expect(msg).toBe("article not found");
         });
     });
-    it("400: invalid body type, responds with bad request ", () => {
+    it("404: invalid body type, responds with bad request ", () => {
         const newComment = {
         username: "icellusedkars",
         body: 420,
@@ -330,6 +330,77 @@ describe("POST /api/articles/:article_id/comments", () => {
         .then(({ body }) => {
             const { msg } = body;
             expect(msg).toBe("article not found");
+        });
+    });
+});
+
+describe("PATCH /api/artices/:articled_id", () => {
+    it("201: request body is accepted and responds with updated article, positive increment vote", () => {
+        const updatedArticle1 = {
+        inc_votes: 1,
+        };
+        return request(app)
+            .patch("/api/articles/1")
+            .send(updatedArticle1)
+            .expect(201)
+            .then(({ body }) => {
+            const { article } = body;
+            expect(article).toEqual({
+                article_id: 1,
+                title: "Living in the shadow of a great man",
+                topic: "mitch",
+                author: "butter_bridge",
+                body: "I find this existence challenging",
+                article_img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                created_at: expect.any(String),
+                votes: 101,
+            });
+        });
+    });
+    it("201: request body is accepted and responds with updated article, negative increment vote", () => {
+        const updatedArticle2 = {
+        inc_votes: -100,
+        };
+        return request(app)
+            .patch("/api/articles/1")
+            .send(updatedArticle2)
+            .expect(201)
+            .then(({ body }) => {
+            const { article } = body;
+            expect(article).toEqual({
+                article_id: 1,
+                title: "Living in the shadow of a great man",
+                topic: "mitch",
+                author: "butter_bridge",
+                body: "I find this existence challenging",
+                article_img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                created_at: expect.any(String),
+                votes: 0,
+            });
+        });
+    });
+    it("400: incorrect type, responds with bad request ", () => {
+        const updatedArticle1 = {
+        inc_votes: "string",
+        };
+        return request(app)
+            .patch("/api/articles/1")
+            .send(updatedArticle1)
+            .expect(400)
+            .then(({ body }) => {
+            const { msg } = body;
+            expect(msg).toBe("bad request");
+        });
+    });
+    it("400: malformed body / missing required fields, responds with bad request ", () => {
+        const updatedArticle1 = {};
+        return request(app)
+            .patch("/api/articles/1")
+            .send(updatedArticle1)
+            .expect(400)
+            .then(({ body }) => {
+            const { msg } = body;
+            expect(msg).toBe("bad request");
         });
     });
 });

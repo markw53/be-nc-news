@@ -1,4 +1,4 @@
-const { selectArticleById, selectArticles } = require('../models/articles-models');
+const { selectArticleById, selectArticles, updateArticle } = require('../models/articles-models');
 
 exports.getArticleByIdController = (req, res, next) => {
     const { article_id } = req.params;
@@ -37,6 +37,23 @@ exports.getArticlesController = (req, res, next) => {
                 next(err); 
             } else {
                 next({ status: 500, msg: 'Internal server error' });
+            }
+        });
+};
+
+exports.patchArticle = (req, res, next) => {
+    const { article_id } = req.params;
+    const input = req.body;
+
+    updateArticle(article_id, input)
+        .then((article) => {
+            res.status(201).send({ article });
+        })
+        .catch((err) => {
+            if (err.status) {
+                res.status(err.status).send({ msg: err.msg });
+            } else {
+                next(err);
             }
         });
 };
