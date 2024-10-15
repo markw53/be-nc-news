@@ -90,5 +90,11 @@
     "created_at": "2020-07-09T20:11:00.000Z",
     "votes": "0"
     }}
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes the specified comment with comment_id and does not serve body back",
+    "queries": [],
+    "exampleResponse": {
+    }
   }
 }
