@@ -1,4 +1,4 @@
-const { selectCommentsByArticleId, insertComment, checkArticleExists } = require('../models/comments-models');
+const { selectCommentsByArticleId, insertComment, checkArticleExists, removeComment } = require('../models/comments-models');
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const { article_id } = req.params;
@@ -28,5 +28,21 @@ exports.postComment = (req, res, next) => {
                 return res.status(err.status).send({ msg: err.msg });
             }
             next(err);  
+        });
+};
+
+exports.deleteComment = (req, res, next) => {
+    const { comment_id } = req.params;
+    
+    if (isNaN(comment_id)) {
+        return res.status(400).send({ msg: "bad request" });
+    }
+
+    removeComment(comment_id)
+        .then(() => {
+            res.sendStatus(204);
+        })
+        .catch((err) => {
+            next(err);
         });
 };
