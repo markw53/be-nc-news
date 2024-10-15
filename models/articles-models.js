@@ -35,9 +35,6 @@ exports.selectArticles = (order = "DESC", sort_by = "created_at", filter) => {
         "comment_count",
     ];
 
-    let queryStr =
-        "SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments on comments.article_id = articles.article_id";
-
     if (!articleSorts.includes(sort_by)) {
         return Promise.reject({
         status: 400,
@@ -51,21 +48,49 @@ exports.selectArticles = (order = "DESC", sort_by = "created_at", filter) => {
         });
     }
 
-    if (Object.keys(filter).length) {
-        const [filterType] = Object.keys(filter);
-        queryStr += ` WHERE ${filterType} = $1`;
-        queryValues.push(...Object.values(filter));
-    }
+    let queryStr = `
+    SELECT articles.*, COUNT(comments.article_id) AS comment_count 
+    FROM articles 
+    LEFT JOIN comments ON comments.article_id = articles.article_id
+    `;
 
-    queryStr += ` GROUP BY articles.article_id ORDER BY ${sort_by} ${capitalsOrder}`;
+    if (filter.topic) {
+        queryStr += ` WHERE articles.topic = $1`;
+        queryValues.push(filter.topic);
+    }    
+
+    queryStr += `GROUP BY articles.article_id`;
+
+    if (sort_by && order) {
+        queryStr += ` ORDER BY ${sort_by} ${order}`;
+    }
 
     return db.query(queryStr, queryValues).then((result) => {
         if (!result.rows.length) {
-        return Promise.reject({
-            status: 404,
-            msg: `no articles found`,
-            });
+        return Promise.reject({ status: 404, msg: `no articles found`, });
         }
         return result.rows;
+    });
+};
+
+exports.updateArticle = (article_id, input) => {
+    const { inc_votes } = input;
+
+    if (inc_votes === undefined || typeof inc_votes !== 'number') {
+        return Promise.reject({ status: 400, msg: 'bad request' });
+    }
+
+    const queryValues = [inc_votes, article_id];
+    const queryStr = `
+        UPDATE articles 
+        SET votes = votes + $1
+        WHERE article_id = $2
+        RETURNING *`;
+
+    return db.query(queryStr, queryValues).then(({ rows }) => {
+        if (!rows.length) {
+            return Promise.reject({ status: 404, msg: 'article not found' });
+        }
+        return rows[0];
     });
 };
