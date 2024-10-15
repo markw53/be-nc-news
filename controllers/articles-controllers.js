@@ -31,12 +31,11 @@ exports.getArticlesController = (req, res, next) => {
         .then((articles) => {
             res.status(200).send({ articles });
         })
-        .catch((err) => {
-            
+        .catch((err) => {            
             if (err.status) {
-                next(err); 
+                res.status(err.status).send({ msg: err.msg }); 
             } else {
-                next({ status: 500, msg: 'Internal server error' });
+                next(err);
             }
         });
 };
