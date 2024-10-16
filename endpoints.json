@@ -10,7 +10,7 @@
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all articles",
+    "description": "Responds with an array of article objects. Accepts queries: topic (filters articles by topic), sort_by (sorts articles by any valid column, defaults to created_at), order (asc or desc, defaults to desc)",
     "queries": ["author", "topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [

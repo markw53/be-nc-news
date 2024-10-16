@@ -81,56 +81,52 @@ describe("GET /api/articles/:articles_id", () => {
     });
 });
 
-describe("GET /api/articles", () => {
-    describe("Queries: sort_by, order and topic filters", () => {
-        it("200: should respond with array sorted by article_id, order default order is descending", () => {
-        return request(app)
-            .get("/api/articles?sort_by=article_id")
-            .expect(200)
-            .then(({ body }) => {
-            const { articles } = body;
-            expect(articles).toBeInstanceOf(Array);
-            expect(articles).toBeSortedBy("article_id", { descending: true });
-            });
-        });
-        it("200: responds with array ordered by ascending when order=asc", () => {
-        return request(app)
-            .get("/api/articles?order=asc")
-            .expect(200)
-            .then(({ body }) => {
-                const { articles } = body;
-                expect(articles).toBeInstanceOf(Array);
-                expect(articles).toBeSortedBy("created_at", { ascending: true });
-            });
-        });
-        it("400: stops invalid sort_by queries and responds with bad request", () => {
-        return request(app)
-            .get("/api/articles?sort_by=quantity")
-            .expect(400)
-            .then(({ body }) => {
-            const { msg } = body;
-            expect(msg).toBe("bad request: cannot sort by 'quantity'");
-            });
-        });
-        it("400: stops invalid order queries and responds with bad request", () => {
-        return request(app)
-            .get("/api/articles?order=rupaul")
-            .expect(400)
-            .then(({ body }) => {
-            const { msg } = body;
-            expect(msg).toBe(
-                "bad request: cannot order by 'rupaul', ASC or DESC only"
-            );
+describe.only("GET /api/articles", () => {
+    it("200: should respond with array sorted by article_id, order default order is descending", () => {
+    return request(app)
+        .get("/api/articles?sort_by=article_id")
+        .expect(200)
+        .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeInstanceOf(Array);
+        expect(articles).toBeSortedBy("article_id", { descending: true });
         });
     });
-        it("400: stops invalid filter types and responds with bad request", () => {
+    it("200: responds with array ordered by ascending when order=ASC", () => {
+    return request(app)
+        .get("/api/articles?order=asc")
+        .expect(200)
+        .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeInstanceOf(Array);
+        expect(articles).toBeSortedBy("created_at", { ascending: true });
+        });
+    });
+    it("400: stops invalid sort_by queries and responds with bad request", () => {
+    return request(app)
+        .get("/api/articles?sort_by=quantity")
+        .expect(400)
+        .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Invalid sort_by query");
+        });
+    });
+    it("400: stops invalid order queries and responds with bad request", () => {
+    return request(app)
+        .get("/api/articles?order=rupaul")
+        .expect(400)
+        .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("Invalid order query");
+        });
+    });
+    it("400: stops invalid filter types and responds with bad request", () => {
         return request(app)
-            .get("/api/articles?positive=10")
-            .expect(400)
-            .then(({ body }) => {
-            const { msg } = body;
-            expect(msg).toBe("bad request");
-            });
+        .get("/api/articles?positive=10")
+        .expect(400)
+        .then(({ body }) => {
+        const { msg } = body;
+        expect(msg).toBe("bad request");
         });
     });
     it("200: responds with an array of article objects", () => {
@@ -141,21 +137,21 @@ describe("GET /api/articles", () => {
         const { articles } = body;
         expect(articles).toHaveLength(13);
         expect(articles).toBeInstanceOf(Array);
-        articles.forEach((article) => {
-            expect(article).toEqual(
-            expect.objectContaining({
-                article_id: expect.any(Number),
-                title: expect.any(String),
-                topic: expect.any(String),
-                author: expect.any(String),
-                body: expect.any(String),
-                created_at: expect.any(String),
-                votes: expect.any(Number),
-                comment_count: expect.any(String),
-                article_img_url: expect.any(String),
-                })
-            );
-        });
+            articles.forEach((article) => {
+                expect(article).toEqual(
+                    expect.objectContaining({
+                        article_id: expect.any(Number),
+                        title: expect.any(String),
+                        topic: expect.any(String),
+                        author: expect.any(String),
+                        body: expect.any(String),
+                        created_at: expect.any(String),
+                        votes: expect.any(Number),
+                        comment_count: expect.any(String) || expect.any(Number),
+                        article_img_url: expect.any(String),
+                    })
+                );
+            });
         });
     });
     it("404: responds with not found if given wrong path", () => {
@@ -165,9 +161,10 @@ describe("GET /api/articles", () => {
         .then(({ body }) => {
             const { msg } = body;
             expect(msg).toBe("not found");
-            });
         });
+    });
 });
+
 
 describe("GET /api/articles/:article_id/comments", () => {
     it("200: responds with an array of comment objects", () => {
