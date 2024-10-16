@@ -1,31 +1,27 @@
 const express = require('express');
 const app = express();
-const articlesRouter = require('./routers/articles-router');
-const commentsRouter = require('./routers/comments-router');
-const topicsRouter = require('./routers/topics-router');
-const usersRouter = require('./routers/users-router');
-const { getEndpoints } = require('./controllers/api-controllers');
+const { getTopicsController } = require('./controllers/topic-controllers');
+const { getArticleByIdController, getArticlesController, patchArticle } = require('./controllers/articles-controllers');
+const { getCommentsByArticleId, postComment, deleteComment } = require('./controllers/comments-controllers');
+const { getUsers } = require('./controllers/users-controllers');
+
+const { handlesPSQLErrors, handlesCustomErrors, handlesInternalServerErrors, handlesNotFoundErrors } = require('./controllers/errors-controllers');
 
 app.use(express.json());
 
-// API Endpoints
-app.get('/api', getEndpoints);
-app.use('/api/articles', articlesRouter);
-app.use('/api/comments', commentsRouter);
-app.use('/api/topics', topicsRouter);
-app.use('/api/users', usersRouter);
+app.get('/api/topics', getTopicsController);
+app.get('/api/articles/:article_id', getArticleByIdController);
+app.get('/api/articles', getArticlesController);
+app.get('/api/articles/:article_id/comments', getCommentsByArticleId);
+app.post('/api/articles/:article_id/comments', postComment);
+app.patch('/api/articles/:article_id', patchArticle);
+app.delete('/api/comments/:comment_id', deleteComment);
+app.get('/api/users', getUsers);
 
-// Error handling
-app.all('*', (req, res) => {
-    res.status(404).send({ msg: 'not found' });
-});
+app.all('*', handlesNotFoundErrors);
 
-app.use((err, req, res, next) => {
-    if (err.status) {
-        res.status(err.status).send({ msg: err.msg });
-    } else {
-        res.status(500).send({ msg: 'Internal server error' });
-    }
-});
+app.use(handlesPSQLErrors);
+app.use(handlesCustomErrors);
+app.use(handlesInternalServerErrors);
 
 module.exports = app;
