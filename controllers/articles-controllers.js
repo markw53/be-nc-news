@@ -12,26 +12,21 @@ exports.getArticleByIdController = (req, res, next) => {
 };
 
 exports.getArticlesController = (req, res, next) => {
-    const { sort_by, order } = req.query;
-    let filter = {};
-
-    const validFilters = ['topic', 'author'];
-
+    const { sort_by, order, topic} = req.query;
+    
+    const validParams = ['sort_by', 'order', 'topic'];
     for (let key in req.query) {
-        if (key !== "sort_by" && key !== "order") {
-            
-            if (!validFilters.includes(key)) {
-                return res.status(400).send({ msg: 'bad request' }); 
-            }
-            filter[key] = req.query[key];
+        if (!validParams.includes(key)) {
+            return res.status(400).send({ msg: "bad request" });
         }
     }
 
-    selectArticles(order, sort_by, filter)
+    selectArticles(sort_by, order, topic)
         .then((articles) => {
             res.status(200).send({ articles });
         })
-        .catch((err) => {            
+        .catch((err) => {    
+            console.error("Error in getArticlesController", err);        
             if (err.status) {
                 res.status(err.status).send({ msg: err.msg }); 
             } else {
