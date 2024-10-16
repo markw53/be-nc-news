@@ -11,6 +11,16 @@
   },
   "GET /api/articles": {
     "description": "Responds with an array of article objects. Accepts queries: topic (filters articles by topic), sort_by (sorts articles by any valid column, defaults to created_at), order (asc or desc, defaults to desc)",
+    "parameters": {
+            "sort_by": "Column name to sort articles (e.g., article_id, title, topic, author, created_at, votes, comment_count).",
+            "order": "Order direction (asc or desc).",
+            "topic": "Filter articles by the specified topic."
+    },
+    "responses": {
+            "200": "Successful response with articles array.",
+            "400": "Bad request for invalid query parameters.",
+            "404": "Not found if the specified topic does not exist."
+    },
     "queries": ["author", "topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [

@@ -26,7 +26,6 @@ exports.getArticlesController = (req, res, next) => {
             res.status(200).send({ articles });
         })
         .catch((err) => {    
-            console.error("Error in getArticlesController", err);        
             if (err.status) {
                 res.status(err.status).send({ msg: err.msg }); 
             } else {

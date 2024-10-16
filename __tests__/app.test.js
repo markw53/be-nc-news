@@ -81,7 +81,7 @@ describe("GET /api/articles/:articles_id", () => {
     });
 });
 
-describe.only("GET /api/articles", () => {
+describe("GET /api/articles", () => {
     it("200: should respond with array sorted by article_id, order default order is descending", () => {
     return request(app)
         .get("/api/articles?sort_by=article_id")
@@ -163,6 +163,28 @@ describe.only("GET /api/articles", () => {
             expect(msg).toBe("not found");
         });
     });
+    it("200: responds with an array of articles filtered by topic", () => {
+        return request(app)
+            .get("/api/articles?topic=mitch")
+            .expect(200)
+            .then(({ body }) => {
+                const { articles } = body;
+                expect(articles).toBeInstanceOf(Array);
+                articles.forEach(article => {
+                expect(article.topic).toBe("mitch");
+            });
+        });
+    });    
+    it("404: responds with not found for invalid topic", () => {
+        return request(app)
+            .get("/api/articles?topic=invalidtopic")
+            .expect(404)
+            .then(({ body }) => {
+            const { msg } = body;
+            expect(msg).toBe("not found");
+            });
+    });
+    
 });
 
 
