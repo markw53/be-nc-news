@@ -129,7 +129,7 @@ describe("GET /api/articles", () => {
         expect(msg).toBe("bad request");
         });
     });
-    it("200: responds with an array of article objects", () => {
+    it("200: responds with an array of article objects including comment count", () => {
         return request(app)
         .get("/api/articles")
         .expect(200)
