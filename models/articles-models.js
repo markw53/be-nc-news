@@ -22,34 +22,53 @@ exports.selectArticleById = (article_id) => {
 };
 
 exports.selectArticles = (sort_by = "created_at", order = "desc", topic) => {
-    const validSortByColumns = ["article_id", "title", "topic", "author", "created_at", "votes",            "comment_count"];
+    const validSortByColumns = ["article_id", "title", "topic", "author", "created_at", "votes", "comment_count"];
     const validOrder = ["asc", "desc"];
 
+    // Validate the sort_by and order
     if (!validSortByColumns.includes(sort_by)) {
         return Promise.reject({ status: 400, msg: "Invalid sort_by query" });
     }
-
-if (!validOrder.includes(order)) {
-    return Promise.reject({ status: 400, msg: "Invalid order query" });
-}
-let queryStr = `
-                SELECT articles.*, COUNT(comments.article_id) AS comment_count
-                FROM articles
-                LEFT JOIN comments ON comments.article_id = articles.article_id
-                `;
-
-const queryValues = [];
-    if (topic) {
-        queryStr += ` WHERE articles.topic = $1`;
-        queryValues.push(topic);
+    if (!validOrder.includes(order)) {
+        return Promise.reject({ status: 400, msg: "Invalid order query" });
     }
 
-queryStr += ` GROUP BY articles.article_id ORDER BY ${sort_by} ${order}`;
+    let queryStr = `
+        SELECT articles.*, COUNT(comments.article_id) AS comment_count
+        FROM articles
+        LEFT JOIN comments ON comments.article_id = articles.article_id
+    `;
+
+    const queryValues = [];
+    
+    // If a topic is provided, check if it exists
+    if (topic) {
+        // First check if the topic exists
+        return db.query(`SELECT * FROM topics WHERE slug = $1`, [topic])
+            .then(({ rows }) => {
+                if (rows.length === 0) {
+                    return Promise.reject({ status: 404, msg: "not found" });
+                }
+                // Proceed with the articles query if the topic exists
+                queryStr += ` WHERE articles.topic = $1`;
+                queryValues.push(topic);
+                
+                queryStr += ` GROUP BY articles.article_id ORDER BY ${sort_by} ${order}`;
+                
+                return db.query(queryStr, queryValues).then(({ rows }) => {
+                    return rows;
+                });
+            });
+    }
+
+    // If no topic is provided, simply execute the articles query
+    queryStr += ` GROUP BY articles.article_id ORDER BY ${sort_by} ${order}`;
 
     return db.query(queryStr, queryValues).then(({ rows }) => {
         return rows;
     });
 };
+
 
 
 exports.updateArticle = (article_id, input) => {
