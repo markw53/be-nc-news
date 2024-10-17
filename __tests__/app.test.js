@@ -35,7 +35,7 @@ describe('GET /api/topics', () => {
         .expect(404)
         .then (({ body }) => {
             const { msg } = body;
-            expect(msg).toBe('User not found');
+            expect(msg).toBe('Not Found');
         });
     });
 });
@@ -67,7 +67,7 @@ describe("GET /api/articles/:articles_id", () => {
             .expect(400)
             .then(({ body }) => {
             const { msg } = body;
-            expect(msg).toBe('Bad request');
+            expect(msg).toBe('Invalid input syntax');
         });
     });
     it("404:  responds with not found for non-existent article_id", () => {
@@ -160,7 +160,7 @@ describe("GET /api/articles", () => {
         .expect(404)
         .then(({ body }) => {
             const { msg } = body;
-            expect(msg).toBe("User not found");
+            expect(msg).toBe("Not Found");
         });
     });
     it("200: responds with an array of articles filtered by topic", () => {
@@ -234,10 +234,10 @@ describe("GET /api/articles/:article_id/comments", () => {
             .expect(404)
             .then(({ body }) => {
                 const { msg } = body;
-                expect(msg).toBe("User not found");
+                expect(msg).toBe("Not Found");
             });
-        });
     });
+});
 
 describe("POST /api/articles/:article_id/comments", () => {
     it("201: request body is accepted and responds with the posted comment object", () => {
@@ -441,7 +441,7 @@ describe("GET /api/users", () => {
         .expect(404)
         .then(({ body }) => {
             const { msg } = body;
-            expect(msg).toBe("User not found");
+            expect(msg).toBe("Not Found");
         });
     });
 });
@@ -501,7 +501,7 @@ describe('PATCH /api/comments/:comment_id', () => {
             .send(invalidVote)
             .expect(400)
             .then(({ body }) => {
-                expect(body.msg).toBe('Bad request');
+                expect(body.msg).toBe('Invalid input syntax');
             });
     });
 
@@ -553,7 +553,7 @@ describe('POST /api/articles', () => {
             .send(newArticle)
             .expect(400)
             .then(({ body }) => {
-                expect(body.msg).toBe('Bad request');
+                expect(body.msg).toBe('Null value not allowed');
             });
     });
 
@@ -569,7 +569,41 @@ describe('POST /api/articles', () => {
             .send(newArticle)
             .expect(400)
             .then(({ body }) => {
-                expect(body.msg).toBe('Bad request');
+                expect(body.msg).toBe('Foreign key violation');
+            });
+    });
+});
+
+describe('POST /api/topics', () => {
+    it('201: successfully adds a new topic and responds with the newly created topic', () => {
+        const newTopic = {
+            slug: 'coding',
+            description: 'All things coding related'
+        };
+
+        return request(app)
+            .post('/api/topics')
+            .send(newTopic)
+            .expect(201)
+            .then(({ body }) => {
+                expect(body.topic).toMatchObject({
+                    slug: 'coding',
+                    description: 'All things coding related'
+                });
+            });
+    });
+
+    it('400: responds with an error when required fields are missing', () => {
+        const incompleteTopic = {
+            slug: 'coding'
+        };
+
+        return request(app)
+            .post('/api/topics')
+            .send(incompleteTopic)
+            .expect(400)
+            .then(({ body }) => {
+                expect(body.msg).toBe('Bad Request: Missing required fields "slug" and/or "description"');
             });
     });
 });

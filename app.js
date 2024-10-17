@@ -14,7 +14,7 @@ const {
 
 app.use("/api", apiRouter);
 
-app.use(handlesNotFoundErrors);
+app.all('/*', handlesNotFoundErrors);
 
 app.use(handlesPSQLErrors);
 

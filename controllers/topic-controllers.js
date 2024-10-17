@@ -1,4 +1,4 @@
-const { getTopics } = require('../models/topic-models');
+const { getTopics, insertTopic } = require('../models/topic-models');
 
 exports.getTopicsController = (req, res, next) => {
     getTopics()
@@ -8,4 +8,14 @@ exports.getTopicsController = (req, res, next) => {
     .catch((err) => {
         next(err);
     });
+};
+
+exports.addTopic = (req, res, next) => {
+    const { slug, description } = req.body;
+
+    insertTopic(slug, description)
+        .then((topic) => {
+            res.status(201).send({ topic });
+        })
+        .catch(next); 
 };
