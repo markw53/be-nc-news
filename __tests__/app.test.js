@@ -603,18 +603,12 @@ describe('POST /api/topics', () => {
             .send(incompleteTopic)
             .expect(400)
             .then(({ body }) => {
-                expect(body.msg).toBe('Bad Request: Missing required fields');
+                expect(body.msg).toBe('Bad Request: Missing required fields "slug" and/or "description"');
             });
     });
 });
 
 describe('DELETE /api/articles/:article_id', () => {
-
-// it('204: deletes the article by id and responds with no content', () => {
-//     return request(app)
-//         .delete('/api/articles/1')
-//         .expect(204);
-// });
 
 it('400: responds with an error for Invalid article_id', () => {
     return request(app)
