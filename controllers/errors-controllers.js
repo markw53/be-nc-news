@@ -16,7 +16,7 @@ exports.handlesCustomErrors = (err, req, res, next) => {
 };
 
 exports.handlesNotFoundErrors = (req, res, next) => {
-    res.status(404).send({ msg: 'not found' });
+    res.status(404).send({ msg: 'User not found' });
 };
 
 exports.handlesInternalServerErrors = (err, req, res, next) => {
