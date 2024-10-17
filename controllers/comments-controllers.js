@@ -1,4 +1,4 @@
-const { selectCommentsByArticleId, insertComment, checkArticleExists, removeComment } = require('../models/comments-models');
+const { selectCommentsByArticleId, insertComment, checkArticleExists, removeComment, patchCommentVotes } = require('../models/comments-models');
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const { article_id } = req.params;
@@ -45,4 +45,18 @@ exports.deleteComment = (req, res, next) => {
         .catch((err) => {
             next(err);
         });
+};
+
+exports.updateCommentVotes = (req, res, next) => {
+    const { comment_id } = req.params;
+    const { inc_votes } = req.body;
+
+    patchCommentVotes(comment_id, inc_votes)
+        .then((updatedComment) => {
+            if (!updatedComment) {
+                return res.status(404).send({ msg: 'Comment not found' });
+            }
+            res.status(200).send({ comment: updatedComment });
+        })
+        .catch(next);
 };

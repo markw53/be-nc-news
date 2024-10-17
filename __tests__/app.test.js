@@ -187,7 +187,6 @@ describe("GET /api/articles", () => {
     
 });
 
-
 describe("GET /api/articles/:article_id/comments", () => {
     it("200: responds with an array of comment objects", () => {
         return request(app)
@@ -479,3 +478,42 @@ describe('GET /api/users/:username', () => {
             });
     });
 });
+
+describe('PATCH /api/comments/:comment_id', () => {
+    it('200: updates the votes and responds with the updated comment', () => {
+        const newVote = { inc_votes: 1 };
+        return request(app)
+            .patch('/api/comments/1')
+            .send(newVote)
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.comment).toMatchObject({
+                    comment_id: 1,
+                    votes: expect.any(Number),
+                });
+            });
+    });
+
+    it('400: responds with an error when inc_votes is not a number', () => {
+        const invalidVote = { inc_votes: 'one' };
+        return request(app)
+            .patch('/api/comments/1')
+            .send(invalidVote)
+            .expect(400)
+            .then(({ body }) => {
+                expect(body.msg).toBe('Bad request');
+            });
+    });
+
+    it('404: responds with an error when comment_id does not exist', () => {
+        const newVote = { inc_votes: 1 };
+        return request(app)
+            .patch('/api/comments/9999')
+            .send(newVote)
+            .expect(404)
+            .then(({ body }) => {
+                expect(body.msg).toBe('Comment not found');
+            });
+    });
+});
+
