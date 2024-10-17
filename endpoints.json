@@ -9,6 +9,19 @@
       "topics": [{ "slug": "football", "description": "Footie!" }]
     }
   },
+  "POST /api/topics": {
+    "description": "Adds a new topic to the database.",
+    "request_body": {
+        "slug": "String - The name of the topic",
+        "description": "String - The description of the topic"
+    },
+    "response": {
+        "topic": {
+            "slug": "The newly created topic name",
+            "description": "The description of the newly created topic"
+        }
+    }
+},
   "GET /api/articles": {
     "description": "Responds with an array of article objects. Accepts queries: topic (filters articles by topic), sort_by (sorts articles by any valid column, defaults to created_at), order (asc or desc, defaults to desc)",
     "parameters": {
