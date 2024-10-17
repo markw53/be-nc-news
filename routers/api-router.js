@@ -14,5 +14,6 @@ apiRouter.use("/topics", topicsRouter);
 apiRouter.use("/articles", articlesRouter);
 apiRouter.use("/users", usersRouter);
 apiRouter.use("/comments", commentsRouter);
+apiRouter.use("/articles", articlesRouter);
 
 module.exports = apiRouter;

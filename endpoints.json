@@ -78,6 +78,29 @@
       ]
     }
   },
+  "POST /api/articles": {
+      "description": "Adds a new article to the database",
+      "requestBody": {
+          "author": "string (required)",
+          "title": "string (required)",
+          "body": "string (required)",
+          "topic": "string (required)",
+          "article_img_url": "string (optional)"
+      },
+      "exampleResponse": {
+        "article": {
+          "author": "icellusedkars",
+          "title": "How to write tests",
+          "body": "Writing tests is important",
+          "topic": "coding",
+          "article_img_url": "https://example.com/image.jpg",
+          "votes": 0,
+          "created_at": "2024-01-01T12:00:00.000Z",
+          "article_id": 1,
+          "comment_count": "0"
+        }
+      }
+    },
   "POST /api/articles/:article_id/comments": {
     "description": "accepts a comment object on the specified article_id article and serves the posted comment object",
     "queries": [],
@@ -85,6 +108,22 @@
     "comment": {"comment_id":19,"body":"you are not good at writing news articles","article_id":1,"author":"icellusedkars","votes":0,"created_at":"2022-05-19T11:07:42.161Z"}
     }
   },
+  "PATCH /api/comments/:comment_id": {
+    "description": "Updates the votes for a comment by comment_id",
+    "requestBody": {
+    "inc_votes": "number (required)"
+    },
+        "exampleResponse": {
+            "comment": {
+            "comment_id": 1,
+            "body": "This is a comment",
+            "votes": 17,
+            "author": "butter_bridge",
+            "article_id": 1,
+            "created_at": "2020-11-03T21:00:00.000Z"
+            }
+        }
+    },
   "PATCH /api/articles:article_id" : {
     "description" : "serves an updated article object from the request body",
     "queries" : [],

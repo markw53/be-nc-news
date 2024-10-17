@@ -517,3 +517,59 @@ describe('PATCH /api/comments/:comment_id', () => {
     });
 });
 
+describe('POST /api/articles', () => {
+    it('201: responds with the newly created article', () => {
+        const newArticle = {
+            author: 'icellusedkars',
+            title: 'How to write tests',
+            body: 'Writing tests is important',
+            topic: 'paper',
+            article_img_url: 'https://example.com/image.jpg'
+        };
+        return request(app)
+            .post('/api/articles')
+            .send(newArticle)
+            .expect(201)
+            .then(({ body }) => {
+                expect(body.article).toMatchObject({
+                    author: 'icellusedkars',
+                    title: 'How to write tests',
+                    body: 'Writing tests is important',
+                    topic: 'paper',
+                    article_img_url: 'https://example.com/image.jpg',
+                    votes: 0,
+                    comment_count: '0',
+                    created_at: expect.any(String)
+                });
+            });
+    });
+
+    it('400: responds with an error when required fields are missing', () => {
+        const newArticle = {
+            title: 'Missing author',
+        };
+        return request(app)
+            .post('/api/articles')
+            .send(newArticle)
+            .expect(400)
+            .then(({ body }) => {
+                expect(body.msg).toBe('Bad request');
+            });
+    });
+
+    it('400: responds with error when non-existent author is given', () => {
+        const newArticle = {
+            author: 'unknown_author',
+            title: 'Test',
+            body: 'Test body',
+            topic: 'coding'
+        };
+        return request(app)
+            .post('/api/articles')
+            .send(newArticle)
+            .expect(400)
+            .then(({ body }) => {
+                expect(body.msg).toBe('Bad request');
+            });
+    });
+});

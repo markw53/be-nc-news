@@ -1,12 +1,7 @@
 const db = require('../db/connection');
-const format = require('pg-format');
 
 exports.selectArticleById = (article_id) => {
     const queryValues = [article_id];
-
-    // if (isNaN(article_id)) {
-    //     return Promise.reject({ status:400, msg: 'bad request' });
-    // }
 
     queryStr = "SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id  WHERE articles.article_id = $1 GROUP BY articles.article_id";
 
@@ -83,6 +78,20 @@ exports.updateArticle = (article_id, input) => {
         if (!rows.length) {
             return Promise.reject({ status: 404, msg: 'article not found' });
         }
+        return rows[0];
+    });
+};
+
+exports.insertArticle = ({ author, title, body, topic, article_img_url = 'default_image_url' }) => {
+    const queryStr = `
+        INSERT INTO articles (author, title, body, topic, article_img_url)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *,
+            (SELECT COUNT(*) FROM comments WHERE comments.article_id = articles.article_id) AS comment_count;
+            `;
+    const queryValues = [author, title, body, topic, article_img_url];
+
+    return db.query(queryStr, queryValues).then(({ rows }) => {
         return rows[0];
     });
 };

@@ -1,4 +1,4 @@
-const { selectArticleById, selectArticles, updateArticle } = require('../models/articles-models');
+const { selectArticleById, selectArticles, updateArticle, insertArticle } = require('../models/articles-models');
 
 exports.getArticleByIdController = (req, res, next) => {
     const { article_id } = req.params;
@@ -49,4 +49,16 @@ exports.patchArticle = (req, res, next) => {
                 next(err);
             }
         });
+};
+
+exports.postArticle = (req, res, next) => {
+    const newArticle = req.body;
+
+    insertArticle(newArticle)
+    .then((article) => {
+        res.status(201).send({ article });
+    })
+    .catch((err) => {
+        next(err);
+    });
 };
