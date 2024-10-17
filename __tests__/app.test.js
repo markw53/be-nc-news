@@ -573,3 +573,37 @@ describe('POST /api/articles', () => {
             });
     });
 });
+
+describe('POST /api/topics', () => {
+    it('201: successfully adds a new topic and responds with the newly created topic', () => {
+        const newTopic = {
+            slug: 'coding',
+            description: 'All things coding related'
+        };
+
+        return request(app)
+            .post('/api/topics')
+            .send(newTopic)
+            .expect(201)
+            .then(({ body }) => {
+                expect(body.topic).toMatchObject({
+                    slug: 'coding',
+                    description: 'All things coding related'
+                });
+            });
+    });
+
+    it('400: responds with an error when required fields are missing', () => {
+        const incompleteTopic = {
+            slug: 'coding'
+        };
+
+        return request(app)
+            .post('/api/topics')
+            .send(incompleteTopic)
+            .expect(400)
+            .then(({ body }) => {
+                expect(body.msg).toBe('Bad Request: Missing required fields "slug" and/or "description"');
+            });
+    });
+});
