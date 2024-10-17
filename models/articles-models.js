@@ -95,3 +95,22 @@ exports.insertArticle = ({ author, title, body, topic, article_img_url = 'defaul
         return rows[0];
     });
 };
+
+exports.removeArticleById = (article_id) => {
+    const id = parseInt(article_id, 10);
+    if (!isNaN(id)) {
+        return Promise.reject({ status: 400, msg: 'Invalid article_id' });
+    }
+
+    return db.query(`DELETE FROM comments WHERE article_id = $1`, [id])
+    .then(() => {
+        return db.query(`DELETE FROM articles WHERE article_id = $1 RETURNING *`, [id]);
+    })
+    .then((result) => {
+        if (result.rowCount === 0) {
+            return Promise.reject({ status: 400, msg: 'Article not found' });
+        }
+        return result;
+    });
+};
+
