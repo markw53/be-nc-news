@@ -1,4 +1,4 @@
-const { selectArticleById, selectArticles, updateArticle, insertArticle } = require('../models/articles-models');
+const { selectArticleById, selectArticles, updateArticle, insertArticle, removeArticleById } = require('../models/articles-models');
 
 exports.getArticleByIdController = (req, res, next) => {
     const { article_id } = req.params;
@@ -61,4 +61,16 @@ exports.postArticle = (req, res, next) => {
     .catch((err) => {
         next(err);
     });
+};
+
+exports.deleteArticleById = (req, res, next ) => {
+    const { article_id } = req.params;
+
+    removeArticleById(article_id)
+        .then(() => {
+            res.status(204).send();
+        })
+        .catch((err) => {
+            next(err);
+        });
 };
