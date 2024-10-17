@@ -57,7 +57,7 @@ Responds with an array of topic objects with slug and description properties
 
 #### Response body
 
-Responds with JSON-encoded object with with property topics, whose value is an array of topic objects. Example:
+Responds with a JSON-encoded object with property topics, whose value is an array of topic objects. Example:
 
 ```
 {
@@ -89,7 +89,7 @@ topic - String - filters the article objects by a valid topic
 
 #### Response body
 
-Responds with JSON-encoded object with with property articles, whose value is the requested articles objects. Example:
+Responds with a JSON-encoded object with property articles, whose value is the requested articles objects. Example:
 
 ```
 {
@@ -121,7 +121,7 @@ Responds with a JSON article object with author, title, article_id, body, topic,
 
 #### Response body
 
-Responds with JSON-encoded object with with property article, whose value is the requested article object. Example:
+Responds with a JSON-encoded object with property article, whose value is the requested article object. Example:
 
 ```
 {
@@ -152,7 +152,7 @@ note: if an article has no comments, the array will be empty
 
 #### Response body
 
-Responds with JSON-encoded object with with property comments, whose value is an array of comment objects for the specified article. Example:
+Responds with a JSON-encoded object with property comments, whose value is an array of comment objects for the specified article. Example:
 
 ```
 {
@@ -198,7 +198,7 @@ Example:
   "inc_votes": 50
 }
 Response body
-Responds with JSON-encoded object with with property updatedArticle, whose value is the updated article object. Example:
+Responds with a JSON-encoded object with property updatedArticle, whose value is the updated article object. Example:
 
 {
   "updatedArticle": {
@@ -238,7 +238,7 @@ Example:
 
 #### Response body
 
-Responds with JSON-encoded object with with property addedComment, whose value is the newly created comment object.
+Responds with a JSON-encoded object with property addedComment, whose value is the newly created comment object.
 
 Example:
 
@@ -266,7 +266,7 @@ Responds with an array of username objects
 200 - OK
 
 Response body
-Responds with JSON-encoded object with with property users, whose value is an array of username objects.
+Responds with a JSON-encoded object with property users, whose value is an array of username objects.
 
 Example:
 

@@ -35,7 +35,7 @@ describe('GET /api/topics', () => {
         .expect(404)
         .then (({ body }) => {
             const { msg } = body;
-            expect(msg).toBe('not found');
+            expect(msg).toBe('User not found');
         });
     });
 });
@@ -67,7 +67,7 @@ describe("GET /api/articles/:articles_id", () => {
             .expect(400)
             .then(({ body }) => {
             const { msg } = body;
-            expect(msg).toBe('bad request');
+            expect(msg).toBe('Bad request');
         });
     });
     it("404:  responds with not found for non-existent article_id", () => {
@@ -160,7 +160,7 @@ describe("GET /api/articles", () => {
         .expect(404)
         .then(({ body }) => {
             const { msg } = body;
-            expect(msg).toBe("not found");
+            expect(msg).toBe("User not found");
         });
     });
     it("200: responds with an array of articles filtered by topic", () => {
@@ -235,7 +235,7 @@ describe("GET /api/articles/:article_id/comments", () => {
             .expect(404)
             .then(({ body }) => {
                 const { msg } = body;
-                expect(msg).toBe("not found");
+                expect(msg).toBe("User not found");
             });
         });
     });
@@ -442,7 +442,40 @@ describe("GET /api/users", () => {
         .expect(404)
         .then(({ body }) => {
             const { msg } = body;
-            expect(msg).toBe("not found");
+            expect(msg).toBe("User not found");
         });
+    });
+});
+
+describe('GET /api/users/:username', () => {
+    it('200: responds with a user object when given a valid username', () => {
+        return request(app)
+            .get('/api/users/lurker')
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.user).toMatchObject({
+                    username: 'lurker',                    
+                    name: 'do_nothing',
+                    avatar_url: expect.any(String),
+                });
+            });
+    });
+
+    it('404: responds with a not found message when the username does not exist', () => {
+        return request(app)
+            .get('/api/users/nonexistent_user')
+            .expect(404)
+            .then(({ body }) => {
+                expect(body.msg).toBe('User not found');
+            });
+    });
+
+    it('404: responds with a not found message when username is invalid format', () => {
+        return request(app)
+            .get('/api/users/123')
+            .expect(404)
+            .then(({ body }) => {
+                expect(body.msg).toBe('User not found');
+            });
     });
 });
