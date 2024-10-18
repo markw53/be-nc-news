@@ -1,9 +1,8 @@
-test:
-  name: run tests
-  on:
-    pull_request:
-      branches:
-        -main
+name: run tests
+on:
+  pull_request:
+    branches:
+      -main
 
 jobs:
   greeting:
@@ -24,8 +23,8 @@ jobs:
   
   test-app:
     needs: test-utils
-    runs on: ubuntu-latest
-    setps:
+    runs-on: ubuntu-latest
+    steps:
       - name: Clone and checkout the repo
         uses: actions/checkout@v4
       - name: setup PostgreSQL
