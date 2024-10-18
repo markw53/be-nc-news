@@ -30,7 +30,6 @@ exports.selectCommentsByArticleId = (article_id, limit = 10, p = 1) => {
         });
 };
 
-
 exports.insertComment = (article_id, inputComment) => {
     const { username, body } = inputComment;
 
