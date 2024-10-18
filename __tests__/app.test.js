@@ -187,58 +187,6 @@ describe("GET /api/articles", () => {
     
 });
 
-describe("GET /api/articles/:article_id/comments", () => {
-    it("200: responds with an array of comment objects", () => {
-        return request(app)
-            .get("/api/articles/1/comments")
-            .expect(200)
-            .then(({ body }) => {
-            const { comments } = body;
-            expect(comments).toBeInstanceOf(Array);
-            expect(comments).toHaveLength(11);
-            comments.forEach((comment) => {
-            expect(comment).toEqual(
-                expect.objectContaining({
-                article_id: 1,
-                comment_id: expect.any(Number),
-                votes: expect.any(Number),
-                created_at: expect.any(String),
-                author: expect.any(String),
-                body: expect.any(String),
-                })
-            );
-        });
-        });
-    });
-    it("400: responds with bad request if given wrong article_id data type", () => {
-        return request(app)
-            .get("/api/articles/article_5/comments")
-            .expect(400)
-            .then(({ body }) => {
-                const { msg } = body;
-                expect(msg).toBe("bad request");
-            });
-        });
-    it("404: responds with invalid filepath if given wrong article_id", () => {
-        return request(app)
-            .get("/api/articles/99999999/comments")
-            .expect(404)
-            .then(({ body }) => {
-            const { msg } = body;
-            expect(msg).toBe("no comments found for article_id 99999999");
-            });
-        });
-    it("404: responds with not found if given wrong filepath", () => {
-        return request(app)
-            .get("/api/articles/1/commentttss")
-            .expect(404)
-            .then(({ body }) => {
-                const { msg } = body;
-                expect(msg).toBe("Not Found");
-            });
-    });
-});
-
 describe("POST /api/articles/:article_id/comments", () => {
     it("201: request body is accepted and responds with the posted comment object", () => {
         const newComment = {
@@ -701,3 +649,101 @@ describe('/api/articles pagination', () => {
         expect(body.total_count).toBeGreaterThan(5);
     });
 });
+
+describe('GET /api/articles/:article_id/comments', () => {
+    it('200: responds with an array of comments for a valid article_id', () => {
+        return request(app)
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.comments).toBeInstanceOf(Array);
+            expect(body.comments).toHaveLength(10); 
+            body.comments.forEach((comment) => {
+            expect(comment).toEqual(
+                expect.objectContaining({
+                comment_id: expect.any(Number),
+                body: expect.any(String),
+                article_id: 1,
+                author: expect.any(String),
+                votes: expect.any(Number),
+                created_at: expect.any(String)
+                })
+            );
+            });
+        });
+    });
+    it('200: responds with a limited number of comments when limit is provided', () => {
+        return request(app)
+        .get('/api/articles/1/comments?limit=5')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.comments).toBeInstanceOf(Array);
+            expect(body.comments).toHaveLength(5); 
+        });
+    });
+    it('200: responds with comments on a specific page when p (page) is provided', () => {
+        return request(app)
+        .get('/api/articles/1/comments?limit=5&p=2')
+        .expect(200)
+        .then(({ body }) => {
+            expect(body.comments).toBeInstanceOf(Array);
+            expect(body.comments).toHaveLength(5); 
+        });
+    });
+    it('200: responds with fewer comments than the limit when not enough comments exist', () => {
+        return request(app)
+        .get('/api/articles/1/comments?limit=50')
+        .expect(200)
+        .then(({ body }) => {
+        expect(body.comments.length).toBeLessThanOrEqual(50);
+        });
+    });    
+    it('400: responds with "bad request" for invalid article_id', () => {
+        return request(app)
+        .get('/api/articles/not-a-number/comments')
+        .expect(400)
+        .then(({ body }) => {
+            expect(body.msg).toBe('bad request');
+        });
+    });
+    it('404: responds with "no comments found for article_id X" for non-existent article_id', () => {
+        return request(app)
+        .get('/api/articles/9999/comments')
+        .expect(404)
+        .then(({ body }) => {
+            expect(body.msg).toBe('no comments found for article_id 9999');
+        });
+    });
+    it('400: responds with "bad request" for invalid limit', () => {
+        return request(app)
+        .get('/api/articles/1/comments?limit=invalid')
+        .expect(400)
+        .then(({ body }) => {
+        expect(body.msg).toBe('invalid limit or page number');
+        });
+    });
+    it('400: responds with "bad request" for invalid page number', () => {
+        return request(app)
+        .get('/api/articles/1/comments?p=invalid')
+        .expect(400)
+        .then(({ body }) => {
+        expect(body.msg).toBe('invalid limit or page number');
+        });
+    });
+    it('404: responds with "no comments found for article_id X" when article exists but no comments found', () => {
+        return request(app)
+        .get('/api/articles/2/comments') 
+        .expect(404)
+        .then(({ body }) => {
+        expect(body.msg).toBe('no comments found for article_id 2');
+        });
+    });
+    it('200: responds with fewer comments than the limit when not enough comments exist', () => {
+        return request(app)
+        .get('/api/articles/1/comments?limit=50')
+        .expect(200)
+        .then(({ body }) => {
+        expect(body.comments.length).toBeLessThanOrEqual(50);
+        });
+    });
+});  
