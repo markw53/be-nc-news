@@ -1,62 +1,69 @@
 {
   "GET /api": {
-    "description": "serves up a json representation of all the available endpoints of the api"
+    "description": "Serves a JSON representation of all available endpoints of the API."
   },
   "GET /api/topics": {
-    "description": "serves an array of all topics",
+    "description": "Serves an array of all topics.",
     "queries": [],
     "exampleResponse": {
-      "topics": [{ "slug": "football", "description": "Footie!" }]
+      "topics": [
+        {
+          "slug": "football",
+          "description": "Footie!"
+        }
+      ]
     }
   },
   "POST /api/topics": {
     "description": "Adds a new topic to the database.",
     "request_body": {
-        "slug": "String - The name of the topic",
-        "description": "String - The description of the topic"
+      "slug": "String - The name of the topic (required)",
+      "description": "String - The description of the topic (required)"
     },
-    "response": {
-        "topic": {
-            "slug": "The newly created topic name",
-            "description": "The description of the newly created topic"
-        }
+    "exampleResponse": {
+      "topic": {
+        "slug": "The newly created topic name",
+        "description": "The description of the newly created topic"
+      }
     }
-},
+  },
   "GET /api/articles": {
-    "description": "Responds with an array of article objects. Accepts queries: topic (filters articles by topic), sort_by (sorts articles by any valid column, defaults to created_at), order (asc or desc, defaults to desc)",
+    "description": "Responds with an array of article objects. Accepts queries: `topic` (filters articles by topic), `sort_by` (sorts articles by any valid column, defaults to `created_at`), `order` (asc or desc, defaults to desc), `limit` (number of articles per page), `page` (for pagination).",
+    "queries": ["author", "topic", "sort_by", "order", "limit", "page"],
     "parameters": {
-            "sort_by": "Column name to sort articles (e.g., article_id, title, topic, author, created_at, votes, comment_count).",
-            "order": "Order direction (asc or desc).",
-            "topic": "Filter articles by the specified topic."
+      "sort_by": "Column name to sort articles (e.g., article_id, title, topic, author, created_at, votes, comment_count).",
+      "order": "Order direction (asc or desc).",
+      "topic": "Filter articles by the specified topic.",
+      "limit": "Number of articles to return (default: 10).",
+      "page": "Page number for pagination (default: 1)."
     },
     "responses": {
-            "200": "Successful response with articles array.",
-            "400": "Bad request for invalid query parameters.",
-            "404": "Not found if the specified topic does not exist."
+      "200": "Successful response with articles array.",
+      "400": "Bad request for invalid query parameters.",
+      "404": "Not found if the specified topic does not exist."
     },
-    "queries": ["author", "topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [
         {
           "title": "Seafood substitutions are increasing",
           "topic": "cooking",
           "author": "weegembump",
-          "body": "'SEAFOOD fraud is a serious global problem', begins a recent report from Oceana, an NGO. Reviewing over 200 studies in 55 countries, the report finds that one in five fish sold has been mislabelled. Although fish fraud is common early in the supply chain, most of it comes at the retail level. In 65% of cases, the motivation is economic—slippery restaurateurs frequently serve up cheaper fish than they advertise to cut costs. In America, Oceana has reported instances of tilapia being sold as the more expensive red snapper. Especially brazen fish criminals have invented new types of fish entirely. In Brazil, researchers were puzzled to find markets selling 'douradinha', ' non-existent species. Close inspection found that 60% of such fish were actually 'vulture' catfish, a relatively undesirable dish. Reports in America of catfish being substituted for more expensive fish date back to at least 2002; Oceana’s study suggests that the phenomenon is spreading.",
+          "body": "'SEAFOOD fraud is a serious global problem', begins a recent report from Oceana...",
           "created_at": "2018-05-30T15:59:13.341Z",
           "votes": 0,
           "article_img_url": "https://images.pexels.com/photos/1267320/pexels-photo-1267320.jpeg?w=700&h=700",
           "comment_count": 6
         }
-      ]
+      ],
+      "total_count": "Total number of articles matching the query."
     }
   },
-  "GET /api/articles:article_id" : {
-    "description" : "serves an article object",
-    "queries" : [],
-    "exampleResponse" : {
-      "article": [  
-        {
-        " article_id": 1,
+  "GET /api/articles/:article_id": {
+    "description": "Serves a specific article object by `article_id`.",
+    "queries": [],
+    "exampleResponse": {
+      "article": {
+        "article_id": 1,
         "title": "Living in the shadow of a great man",
         "topic": "mitch",
         "author": "butter_bridge",
@@ -65,113 +72,116 @@
         "votes": 0,
         "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
         "comment_count": 11
-        }
-      ]
+      }
     }
   },
   "GET /api/articles/:article_id/comments": {
-    "description": "serves an array of all comments with the specified article_id",
+    "description": "Serves an array of all comments associated with the specified `article_id`.",
     "queries": [],
     "exampleResponse": {
       "comments": [
         {
-          "comment_id":2,
-          "body":"The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
-          "article_id":1,
-          "author":"butter_bridge",
-          "votes":14,
-          "created_at":"2020-10-31T03:03:00.000Z"},
-        {
-          "comment_id":3,
-          "body":"Replacing the quiet elegance of the dark suit and tie with the casual indifference of these muted earth tones is a form of fashion suicide, but, uh, call me crazy — on you it works.","article_id":1,
-          "author":"icellusedkars",
-          "votes":100,
-          "created_at":"2020-03-01T01:13:00.000Z"
+          "comment_id": 2,
+          "body": "The beautiful thing about treasure is that it exists...",
+          "article_id": 1,
+          "author": "butter_bridge",
+          "votes": 14,
+          "created_at": "2020-10-31T03:03:00.000Z"
         }
       ]
     }
   },
   "POST /api/articles": {
-      "description": "Adds a new article to the database",
-      "requestBody": {
-          "author": "string (required)",
-          "title": "string (required)",
-          "body": "string (required)",
-          "topic": "string (required)",
-          "article_img_url": "string (optional)"
-      },
-      "exampleResponse": {
-        "article": {
-          "author": "icellusedkars",
-          "title": "How to write tests",
-          "body": "Writing tests is important",
-          "topic": "coding",
-          "article_img_url": "https://example.com/image.jpg",
-          "votes": 0,
-          "created_at": "2024-01-01T12:00:00.000Z",
-          "article_id": 1,
-          "comment_count": "0"
-        }
-      }
+    "description": "Adds a new article to the database.",
+    "request_body": {
+      "author": "string (required)",
+      "title": "string (required)",
+      "body": "string (required)",
+      "topic": "string (required)",
+      "article_img_url": "string (optional)"
     },
+    "exampleResponse": {
+      "article": {
+        "author": "icellusedkars",
+        "title": "How to write tests",
+        "body": "Writing tests is important",
+        "topic": "coding",
+        "article_img_url": "https://example.com/image.jpg",
+        "votes": 0,
+        "created_at": "2024-01-01T12:00:00.000Z",
+        "article_id": 1,
+        "comment_count": 0
+      }
+    }
+  },
   "POST /api/articles/:article_id/comments": {
-    "description": "accepts a comment object on the specified article_id article and serves the posted comment object",
+    "description": "Accepts a comment object for the specified `article_id` and serves the posted comment.",
     "queries": [],
     "exampleResponse": {
-    "comment": {"comment_id":19,"body":"you are not good at writing news articles","article_id":1,"author":"icellusedkars","votes":0,"created_at":"2022-05-19T11:07:42.161Z"}
+      "comment": {
+        "comment_id": 19,
+        "body": "You are not good at writing news articles.",
+        "article_id": 1,
+        "author": "icellusedkars",
+        "votes": 0,
+        "created_at": "2022-05-19T11:07:42.161Z"
+      }
     }
   },
   "PATCH /api/comments/:comment_id": {
-    "description": "Updates the votes for a comment by comment_id",
-    "requestBody": {
-    "inc_votes": "number (required)"
+    "description": "Updates the votes for a comment by `comment_id`.",
+    "request_body": {
+      "inc_votes": "number (required)"
     },
-        "exampleResponse": {
-            "comment": {
-            "comment_id": 1,
-            "body": "This is a comment",
-            "votes": 17,
-            "author": "butter_bridge",
-            "article_id": 1,
-            "created_at": "2020-11-03T21:00:00.000Z"
-            }
-        }
-    },
-  "PATCH /api/articles:article_id" : {
-    "description" : "serves an updated article object from the request body",
-    "queries" : [],
-    "exampleRequestBody": { "body" : {
-    "inc_votes": 100
-    }},
-    "exampleResponse" : {"article": {    
-    "article_id": 1,
-    "title": "Living in the shadow of a great man",
-    "topic": "mitch",
-    "author": "butter_bridge",
-    "body": "I find this existence challenging",
-    "created_at": "2020-07-09T20:11:00.000Z",
-    "votes": "0"
-    }}
-  },
-  "DELETE /api/comments/:comment_id": {
-    "description": "deletes the specified comment with comment_id and does not serve body back",
-    "queries": [],
     "exampleResponse": {
+      "comment": {
+        "comment_id": 1,
+        "body": "This is a comment",
+        "votes": 17,
+        "author": "butter_bridge",
+        "article_id": 1,
+        "created_at": "2020-11-03T21:00:00.000Z"
+      }
     }
   },
+  "PATCH /api/articles/:article_id": {
+    "description": "Updates an article's votes by `article_id`.",
+    "request_body": {
+      "inc_votes": "number (required)"
+    },
+    "exampleResponse": {
+      "article": {
+        "article_id": 1,
+        "title": "Living in the shadow of a great man",
+        "topic": "mitch",
+        "author": "butter_bridge",
+        "body": "I find this existence challenging",
+        "created_at": "2020-07-09T20:11:00.000Z",
+        "votes": 100
+      }
+    }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "Deletes the specified comment by `comment_id`. Returns no content.",
+    "queries": [],
+    "exampleResponse": {}
+  },
   "GET /api/users": {
-    "description": "serves an array of all users",
+    "description": "Serves an array of all users.",
     "queries": [],
     "exampleResponse": {
-      "users": [{
-      "username":"butter_bridge",
-      "name":"jonny",
-      "avatar_url":"https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"},
-      {
-      "username":"icellusedkars",
-      "name":"sam",
-      "avatar_url":"https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
-      }]
+      "users": [
+        {
+          "username": "butter_bridge",
+          "name": "jonny",
+          "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+        },
+        {
+          "username": "icellusedkars",
+          "name": "sam",
+          "avatar_url": "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+        }
+      ]
     }
   }
 }
