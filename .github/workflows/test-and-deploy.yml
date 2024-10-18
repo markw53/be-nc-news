@@ -1,0 +1,40 @@
+test:
+  name: run tests
+  on:
+    pull_request:
+      branches:
+        -main
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    steps:
+    - name: say hello
+      run: echo 'hello from pipeline'
+
+  test-utils:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone and checkout the repo
+        uses: actions/checkout@v4
+      - name: install dependencies
+        run: npm install
+      - name: run utils tests
+        run: npm run test-utils
+  
+  test-app:
+    needs: test-utils
+    runs on: ubuntu-latest
+    setps:
+      - name: Clone and checkout the repo
+        uses: actions/checkout@v4
+      - name: setup PostgreSQL
+        uses: harmon758/postgresql-action@v1
+        with:
+          postgresql db: 'nc_news_test'
+          postgresql user: 'mworkman'
+          postgresql password: 'password'
+      - name: Install dependencies
+        run: npm install
+      - name: Run integration tests
+        run: PGDATABASE=nc_news_test PGPASSWORD=password PGUSER=mworkman npm run test-app
