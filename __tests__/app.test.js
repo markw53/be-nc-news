@@ -135,7 +135,7 @@ describe("GET /api/articles", () => {
         .expect(200)
         .then(({ body }) => {
         const { articles } = body;
-        expect(articles).toHaveLength(13);
+        expect(articles).toHaveLength(10);
         expect(articles).toBeInstanceOf(Array);
             articles.forEach((article) => {
                 expect(article).toEqual(
@@ -626,5 +626,78 @@ it('400: responds with an error for invalid input syntax', () => {
         .then(({ body }) => {
             expect(body.msg).toBe('Invalid input syntax');
         });
+    });
 });
+
+describe('/api/articles pagination', () => {
+    it('GET: 200 - responds with 10 articles by default and total_count', async () => {
+        const { body } = await request(app)
+            .get('/api/articles')
+            .expect(200);
+        expect(body.articles.length).toBe(10);
+        expect(body.total_count).toBeGreaterThan(10); 
+        body.articles.forEach((article) => {
+            expect(article).toMatchObject({
+                article_id: expect.any(Number),
+                title: expect.any(String),
+                author: expect.any(String),
+                topic: expect.any(String),
+                body: expect.any(String),
+                created_at: expect.any(String),
+                votes: expect.any(Number),
+                comment_count: expect.any(String), 
+            });
+        });
+    });
+    it('GET: 200 - responds with a limited number of articles when passed a limit query', async () => {
+        const { body } = await request(app)
+            .get('/api/articles?limit=5')
+            .expect(200);
+
+        expect(body.articles.length).toBe(5);
+        expect(body.total_count).toBeGreaterThan(5);
+    });
+    it('GET: 200 - responds with articles for the specified page', async () => {
+        const { body } = await request(app)
+            .get('/api/articles?limit=5&p=2') 
+            .expect(200);
+
+        expect(body.articles.length).toBe(5);
+        expect(body.total_count).toBeGreaterThan(5);
+    });
+    it('GET: 200 - paginates articles filtered by topic', async () => {
+        const { body } = await request(app)
+            .get('/api/articles?topic=mitch&limit=5')
+            .expect(200);
+
+        expect(body.articles.length).toBe(5);
+        expect(body.total_count).toBeGreaterThan(5); 
+        body.articles.forEach((article) => {
+            expect(article.topic).toBe('mitch');
+        });
+    });
+    it('GET: 400 - responds with an error if limit is not a number', async () => {
+        const { body } = await request(app)
+            .get('/api/articles?limit=invalid')
+            .expect(400);
+
+        expect(body.msg).toBe('Invalid input syntax');
+    });
+    it('GET: 200 - responds with empty articles array if page exceeds total articles count', async () => {
+        const { body } = await request(app)
+            .get('/api/articles?limit=5&p=100') 
+            .expect(200);
+
+        expect(body.articles.length).toBe(0);
+        expect(body.total_count).toBeGreaterThan(0);
+    });
+    it('GET: 200 - paginates and sorts articles by a valid field', async () => {
+        const { body } = await request(app)
+            .get('/api/articles?limit=5&p=1&sort_by=votes&order=asc')
+            .expect(200);
+
+        expect(body.articles.length).toBe(5);
+        expect(body.articles).toBeSortedBy('votes', { ascending: true });
+        expect(body.total_count).toBeGreaterThan(5);
+    });
 });

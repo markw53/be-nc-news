@@ -12,22 +12,22 @@ exports.getArticleByIdController = (req, res, next) => {
 };
 
 exports.getArticlesController = (req, res, next) => {
-    const { sort_by, order, topic} = req.query;
-    
-    const validParams = ['sort_by', 'order', 'topic'];
+    const { sort_by, order, topic, limit = 10, p = 1 } = req.query;
+
+    const validParams = ['sort_by', 'order', 'topic', 'limit', 'p'];
     for (let key in req.query) {
         if (!validParams.includes(key)) {
             return res.status(400).send({ msg: "bad request" });
         }
     }
 
-    selectArticles(sort_by, order, topic)
-        .then((articles) => {
-            res.status(200).send({ articles });
+    selectArticles(sort_by, order, topic, limit, p)
+        .then(({ articles, total_count }) => {
+            res.status(200).send({ articles, total_count: Number(total_count) });
         })
-        .catch((err) => {    
+        .catch((err) => {
             if (err.status) {
-                res.status(err.status).send({ msg: err.msg }); 
+                res.status(err.status).send({ msg: err.msg });
             } else {
                 next(err);
             }
