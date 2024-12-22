@@ -3,12 +3,12 @@ const { selectArticleById, selectArticles, updateArticle, insertArticle, removeA
 exports.getArticleByIdController = (req, res, next) => {
     const { article_id } = req.params;
     selectArticleById(article_id)
-    .then((article) => {
-        res.status(200).send({ article });
-    })
-    .catch((err) => {
-        next(err);
-    });
+        .then((article) => {
+            res.status(200).send({ article });
+        })
+        .catch((err) => {
+            next(err);
+        });
 };
 
 exports.getArticlesController = (req, res, next) => {
@@ -55,15 +55,15 @@ exports.postArticle = (req, res, next) => {
     const newArticle = req.body;
 
     insertArticle(newArticle)
-    .then((article) => {
-        res.status(201).send({ article });
-    })
-    .catch((err) => {
-        next(err);
-    });
+        .then((article) => {
+            res.status(201).send({ article });
+        })
+        .catch((err) => {
+            next(err);
+        });
 };
 
-exports.deleteArticleById = (req, res, next ) => {
+exports.deleteArticleById = (req, res, next) => {
     const { article_id } = req.params;
 
     removeArticleById(article_id)
