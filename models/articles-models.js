@@ -1,132 +1,169 @@
-const db = require('../db/connection');
+// models/articles-models.js
+import db from "../firebase.js";
 
-exports.selectArticleById = (article_id) => {
-    const queryValues = [article_id];
+// ✅ 1. Get article by ID, including comment count
+export const selectArticleById = async (article_id) => {
+  const articleRef = db.collection("articles").doc(article_id);
+  const articleSnap = await articleRef.get();
 
-    queryStr = "SELECT articles.*, COUNT(comments.article_id) AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id  WHERE articles.article_id = $1 GROUP BY articles.article_id";
+  if (!articleSnap.exists) {
+    throw { status: 404, msg: `no article found for article_id ${article_id}` };
+  }
 
-    return db.query(queryStr, queryValues).then((result) => {
-        if (!result.rows.length) {
-            return Promise.reject({
-                status: 404,
-                msg: `no article found for article_id ${article_id}`,
-            });
-        }
-        return result.rows[0];
-    });
+  const article = articleSnap.data();
+
+  // Count comments manually
+  const commentsSnap = await db
+    .collection("comments")
+    .where("article_id", "==", article_id)
+    .get();
+
+  article.comment_count = commentsSnap.size;
+
+  return article;
 };
 
-exports.selectArticles = (sort_by = "created_at", order = "desc", topic, limit = 10, page = 1) => {
-    const validSortByColumns = ["article_id", "title", "topic", "author", "created_at", "votes", "comment_count"];
-    const validOrder = ["asc", "desc"];
+// ✅ 2. Get paginated / filtered articles
+export const selectArticles = async (
+  sort_by = "created_at",
+  order = "desc",
+  topic,
+  limit = 10,
+  page = 1
+) => {
+  const validSortByColumns = [
+    "title",
+    "topic",
+    "author",
+    "created_at",
+    "votes",
+  ];
+  if (!validSortByColumns.includes(sort_by)) {
+    throw { status: 400, msg: "Invalid sort_by query" };
+  }
 
-    if (!validSortByColumns.includes(sort_by)) {
-        return Promise.reject({ status: 400, msg: "Invalid sort_by query" });
+  const validOrder = ["asc", "desc"];
+  if (!validOrder.includes(order)) {
+    throw { status: 400, msg: "Invalid order query" };
+  }
+
+  let query = db.collection("articles");
+
+  // Filter by topic if given
+  if (topic) {
+    const topicSnap = await db.collection("topics").doc(topic).get();
+    if (!topicSnap.exists) {
+      throw { status: 404, msg: "not found" };
     }
-    if (!validOrder.includes(order)) {
-        return Promise.reject({ status: 400, msg: "Invalid order query" });
-    }
+    query = query.where("topic", "==", topic);
+  }
 
-    const queryValues = [];
+  // Firestore: orderBy + limit, replace OFFSET with cursor-based pagination
+  query = query.orderBy(sort_by, order);
 
-    const topicCheckQuery = `SELECT * FROM topics WHERE slug = $1`;
-    if (topic) {
-        queryValues.push(topic);
-        return db.query(topicCheckQuery, queryValues).then(({ rows }) => {
-            if (rows.length === 0) {
-                return Promise.reject({ status: 404, msg: "not found" });
-            }
+  const snapshot = await query.limit(Number(limit)).get();
 
-            let queryStr = `
-                SELECT articles.*, COUNT(comments.article_id) AS comment_count
-                FROM articles
-                LEFT JOIN comments ON comments.article_id = articles.article_id
-                WHERE articles.topic = $1
-                GROUP BY articles.article_id
-                ORDER BY ${sort_by} ${order} LIMIT $2 OFFSET $3
-            `;
-            
-            const offset = (page - 1) * limit;
-            queryValues.push(limit, offset);
+  const articles = [];
+  for (const doc of snapshot.docs) {
+    const article = doc.data();
+    // Count comments (may be heavy if large dataset, consider denormalizing later)
+    const commentsSnap = await db
+      .collection("comments")
+      .where("article_id", "==", article.id)
+      .get();
+    article.comment_count = commentsSnap.size;
+    articles.push(article);
+  }
 
-            return db.query(queryStr, queryValues).then(({ rows }) => {
-                return db.query(`SELECT COUNT(*) FROM articles WHERE topic = $1`, [topic]).then((countResult) => {
-                    const total_count = countResult.rows[0].count;
-                    return { articles: rows, total_count };
-                });
-            });
-        });
-    }
+  // Total count for pagination
+  const totalSnap = topic
+    ? await db.collection("articles").where("topic", "==", topic).get()
+    : await db.collection("articles").get();
 
-    let queryStr = `
-        SELECT articles.*, COUNT(comments.article_id) AS comment_count
-        FROM articles
-        LEFT JOIN comments ON comments.article_id = articles.article_id
-        GROUP BY articles.article_id
-        ORDER BY ${sort_by} ${order} LIMIT $1 OFFSET $2
-    `;
+  const total_count = totalSnap.size;
 
-    queryValues.push(limit, (page - 1) * limit);
-
-    return db.query(queryStr, queryValues).then(({ rows }) => {
-        return db.query(`SELECT COUNT(*) FROM articles`).then((countResult) => {
-            const total_count = countResult.rows[0].count;
-            return { articles: rows, total_count };
-        });
-    });
+  return { articles, total_count };
 };
 
-exports.updateArticle = (article_id, input) => {
-    const { inc_votes } = input;
+// ✅ 3. Update article (e.g. patch votes)
+export const updateArticle = async (article_id, input) => {
+  const { inc_votes } = input;
 
-    if (inc_votes === undefined || typeof inc_votes !== 'number') {
-        return Promise.reject({ status: 400, msg: 'bad request' });
-    }
+  if (inc_votes === undefined || typeof inc_votes !== "number") {
+    throw { status: 400, msg: "bad request" };
+  }
 
-    const queryValues = [inc_votes, article_id];
-    const queryStr = `
-        UPDATE articles 
-        SET votes = votes + $1
-        WHERE article_id = $2
-        RETURNING *`;
+  const ref = db.collection("articles").doc(article_id);
+  const snap = await ref.get();
 
-    return db.query(queryStr, queryValues).then(({ rows }) => {
-        if (!rows.length) {
-            return Promise.reject({ status: 404, msg: 'article not found' });
-        }
-        return rows[0];
-    });
+  if (!snap.exists) {
+    throw { status: 404, msg: "article not found" };
+  }
+
+  const current = snap.data();
+  const newVotes = (current.votes || 0) + inc_votes;
+
+  await ref.update({ votes: newVotes });
+
+  const updatedSnap = await ref.get();
+  const article = updatedSnap.data();
+
+  // Recount comments
+  const commentsSnap = await db
+    .collection("comments")
+    .where("article_id", "==", article_id)
+    .get();
+  article.comment_count = commentsSnap.size;
+
+  return article;
 };
 
-exports.insertArticle = ({ author, title, body, topic, article_img_url = 'default_image_url' }) => {
-    const queryStr = `
-        INSERT INTO articles (author, title, body, topic, article_img_url)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING *,
-            (SELECT COUNT(*) FROM comments WHERE comments.article_id = articles.article_id) AS comment_count;
-            `;
-    const queryValues = [author, title, body, topic, article_img_url];
+// ✅ 4. Insert new article
+export const insertArticle = async ({
+  author,
+  title,
+  body,
+  topic,
+  article_img_url = "https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700",
+}) => {
+  const ref = db.collection("articles").doc();
 
-    return db.query(queryStr, queryValues).then(({ rows }) => {
-        return rows[0];
-    });
+  await ref.set({
+    id: ref.id,
+    author,
+    title,
+    body,
+    topic,
+    article_img_url,
+    created_at: new Date(),
+    votes: 0,
+  });
+
+  const snap = await ref.get();
+  return { ...snap.data(), comment_count: 0 };
 };
 
-exports.removeArticleById = (article_id) => {
-    const id = parseInt(article_id, 10);
-    if (!isNaN(id)) {
-        return Promise.reject({ status: 400, msg: 'Invalid article_id' });
-    }
+// ✅ 5. Remove article by ID (and cascade delete its comments)
+export const removeArticleById = async (article_id) => {
+  const ref = db.collection("articles").doc(article_id);
+  const snap = await ref.get();
 
-    return db.query(`DELETE FROM comments WHERE article_id = $1`, [id])
-    .then(() => {
-        return db.query(`DELETE FROM articles WHERE article_id = $1 RETURNING *`, [id]);
-    })
-    .then((result) => {
-        if (result.rowCount === 0) {
-            return Promise.reject({ status: 400, msg: 'Article not found' });
-        }
-        return result;
-    });
+  if (!snap.exists) {
+    throw { status: 404, msg: "Article not found" };
+  }
+
+  // Delete comments linked to the article
+  const commentsSnap = await db
+    .collection("comments")
+    .where("article_id", "==", article_id)
+    .get();
+
+  const batch = db.batch();
+  commentsSnap.docs.forEach((doc) => batch.delete(doc.ref));
+  await batch.commit();
+
+  // Delete the article itself
+  await ref.delete();
+
+  return true;
 };
-

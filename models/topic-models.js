@@ -1,24 +1,33 @@
-const db = require('../db/connection');
+// models/topics-models.js
+import db from "../firebase.js";
 
-exports.getTopics = () => {
-    const queryValues = [];
-    let queryStr = "SELECT * FROM topics";
-    return db.query(queryStr, queryValues).then(({ rows }) => {
-        return rows;
-    });
+/**
+ * Get all topics
+ */
+export const getTopics = async () => {
+  const snapshot = await db.collection("topics").get();
+
+  const topics = snapshot.docs.map((doc) => doc.data());
+  return topics;
 };
 
-exports.insertTopic = (slug, description) => {
-    const queryStr = `
-        INSERT INTO topics (slug, description)
-        VALUES ($1, $2)
-        RETURNING *;
-    `;
-    const queryValues = [slug, description];
+/**
+ * Insert a new topic into Firestore (slug used as doc ID)
+ */
+export const insertTopic = async (slug, description) => {
+  if (!slug || typeof slug !== "string" || !description || typeof description !== "string") {
+    throw { status: 400, msg: "bad request" };
+  }
 
-    return db.query(queryStr, queryValues)
-        .then(({ rows }) => {
-            return rows[0];
-        });
+  const ref = db.collection("topics").doc(slug);
+
+  const topicDoc = {
+    slug,
+    description,
+  };
+
+  await ref.set(topicDoc);
+
+  const snap = await ref.get();
+  return snap.data();
 };
-

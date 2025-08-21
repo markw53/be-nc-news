@@ -1,9 +1,14 @@
-const devData = require('../data/development-data/index.js');
-const seed = require('./seed.js');
-const db = require('../connection.js');
+// run-seed.js
+import devData from "../data/development-data/index.js";
+import seed from "./seed.js";
 
-const runSeed = () => {
-  return seed(devData).then(() => db.end());
+const runSeed = async () => {
+  try {
+    await seed(devData);
+    console.log("Firestore seeding completed ✅");
+  } catch (err) {
+    console.error("Error in seeding process:", err);
+  }
 };
 
 runSeed();

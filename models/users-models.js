@@ -1,18 +1,30 @@
-const db = require('../db/connection');
+// models/users-models.js
+import db from "../firebase.js";
 
-exports.selectUsers = () => {
-    const queryValues = [];
-    let queryStr = `SELECT * FROM users`;
+/**
+ * Get all users
+ */
+export const selectUsers = async () => {
+  const snapshot = await db.collection("users").get();
 
-    return db.query(queryStr, queryValues).then(({ rows }) => {
-        return rows;
-    });
+  const users = snapshot.docs.map((doc) => doc.data());
+  return users;
 };
 
-exports.selectUserByUsername = (username) => {
-    return db.query(`SELECT * FROM users WHERE username = $1`, [username])
-        .then(({ rows }) => {
-            return rows[0];
-        });
-};
+/**
+ * Get a single user by username
+ */
+export const selectUserByUsername = async (username) => {
+  if (!username || typeof username !== "string") {
+    throw { status: 400, msg: "bad request" };
+  }
 
+  const ref = db.collection("users").doc(username);
+  const snap = await ref.get();
+
+  if (!snap.exists) {
+    throw { status: 404, msg: `no user found for username ${username}` };
+  }
+
+  return snap.data();
+};
