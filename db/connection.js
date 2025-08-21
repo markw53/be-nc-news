@@ -1,19 +1,13 @@
-const { Pool } = require('pg');
-const ENV = process.env.NODE_ENV || 'development';
-const config = {};
+require("dotenv").config();
+const { Pool } = require("pg");
+const dns = require("dns");
 
-require('dotenv').config({
-  path: `${__dirname}/../.env.${ENV}`,
+// Force IPv4 lookups inside Node
+dns.setDefaultResultOrder("ipv4first");
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }, // required for Supabase
 });
 
-if (!process.env.PGDATABASE && !process.env.DATABASE_URL) {
-  throw new Error('PGDATABASE not set or DATABASE_URL not set');
-}
-
-if (ENV === "production") {
-  config.connectionString = process.env.DATABASE_URL;
-  config.max = 2;
-}
-module.exports = new Pool(config);
-
-
+module.exports = pool;
