@@ -1,11 +1,14 @@
-const express = require('express');
-const { updateCommentVotes } = require('../controllers/comments-controllers');
-const { deleteComment } = require('../controllers/comments-controllers');
+// routers/comments-router.js
+import express from "express";
+import {
+  updateCommentVotes,
+  deleteComment,
+} from "../controllers/comments-controllers.js";
 
 const commentsRouter = express.Router();
 
-commentsRouter.patch('/:comment_id', updateCommentVotes);
+commentsRouter.patch("/:comment_id", updateCommentVotes);
 
-commentsRouter.delete('/:comment_id', deleteComment);
+commentsRouter.delete("/:comment_id", deleteComment);
 
-module.exports = commentsRouter;
+export default commentsRouter;

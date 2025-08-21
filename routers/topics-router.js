@@ -1,11 +1,15 @@
-const express = require('express');
-const { getTopicsController, addTopic } = require('../controllers/topic-controllers');
-const { handlesTopicPostErrors } = require('../controllers/errors-controllers');
+// routers/topics-router.js
+import express from "express";
+import {
+  getTopicsController,
+  addTopic,
+} from "../controllers/topic-controllers.js";
+import { handlesTopicPostErrors } from "../controllers/errors-controllers.js";
 
 const topicsRouter = express.Router();
 
-topicsRouter.get('/', getTopicsController);
+topicsRouter.get("/", getTopicsController);
 
-topicsRouter.post('/', handlesTopicPostErrors, addTopic);
+topicsRouter.post("/", handlesTopicPostErrors, addTopic);
 
-module.exports = topicsRouter;
+export default topicsRouter;

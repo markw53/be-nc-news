@@ -1,14 +1,13 @@
 {
   "name": "be-nc-news",
-  "version": "1.0.0",
-  "description": "bc-nc-news",
-  "main": "listen.js",
+  "version": "2.0.0",
+  "description": "NC News Api Backend - Firestore Edition",
+  "main": "server.js",
+  "type": "module",
   "scripts": {
-    "start": "node listen.js",
-    "seed-prod": "NODE_ENV=production npm run seed",
-    "setup-dbs": "psql -f ./db/setup.sql",
+    "start": "node server.js",
     "seed": "node ./db/seeds/run-seed.js",
-    "test": "jest",
+    "test": "NODE_OPTIONS=--experimenal-vm-modules jest",
     "prepare": "husky install"
   },
   "repository": {
@@ -32,10 +31,10 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.21.1",
-    "pg": "^8.7.3",
-    "pg-format": "^1.0.4"
+    "firebase-admin": "^13.4.0"
   },
   "jest": {
+    "testEnvironment": "node",
     "setupFilesAfterEnv": [
       "jest-extended/all"
     ]

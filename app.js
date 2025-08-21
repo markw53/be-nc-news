@@ -1,25 +1,30 @@
-const express = require("express");
-const apiRouter = require("./routers/api-router");
+// app.js
+import express from "express";
+import cors from "cors";
+
+// Routers
+import apiRouter from "./routers/api-router.js";
+
+// Error handlers
+import {
+  handlesCustomErrors,
+  handlesInternalServerErrors,
+  handlesNotFoundErrors,
+} from "./controllers/errors-controllers.js";
+
 const app = express();
-const cors = require('cors');
+
 app.use(express.json());
 app.use(cors());
 
-const {
-    handlesPSQLErrors,
-    handlesCustomErrors,
-    handlesInternalServerErrors,
-    handlesNotFoundErrors,
-} = require("./controllers/errors-controllers");
-
+// Mount routers
 app.use("/api", apiRouter);
 
-app.all('/*', handlesNotFoundErrors);
+// 404 for invalid routes
+app.all("/*", handlesNotFoundErrors);
 
-app.use(handlesPSQLErrors);
-
+// Error handling middleware
 app.use(handlesCustomErrors);
-
 app.use(handlesInternalServerErrors);
 
-module.exports = app;
+export default app;
