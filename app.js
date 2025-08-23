@@ -1,8 +1,12 @@
 // app.js
 import express from "express";
 import cors from "cors";
-import endpoints from "./endpoints.json" assert { type: "json" };
+import fs from "fs";
 import { errorHandler } from "./middleware/errorHandler.js";
+
+const endpoints = JSON.parse(
+  fs.readFileSync(new URL("./endpoints.json", import.meta.url))
+);
 
 // Import controllers
 import {
@@ -15,7 +19,7 @@ import {
   getArticleById,
   postArticle,
   patchArticleVotes,
-  deleteArticle,
+  deleteArticleById,
   getArticleComments,
   postComment,
 } from "./controllers/articles.controller.js";
@@ -50,7 +54,7 @@ app.get("/api/articles", getArticles);
 app.get("/api/articles/:article_id", getArticleById);
 app.post("/api/articles", postArticle);
 app.patch("/api/articles/:article_id", patchArticleVotes);
-app.delete("/api/articles/:article_id", deleteArticle);
+app.delete("/api/articles/:article_id", deleteArticleById);
 
 // Comments nested under articles
 app.get("/api/articles/:article_id/comments", getArticleComments);
