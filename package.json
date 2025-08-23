@@ -5,9 +5,10 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
+    "dev": "nodemon server.js",
     "start": "node server.js",
-    "seed": "node ./db/seeds/run-seed.js",
-    "test": "NODE_OPTIONS=--experimenal-vm-modules jest",
+    "test": "jest --watchAll",
+    "seed": "node db/firestoreUtils.js",
     "prepare": "husky install"
   },
   "repository": {

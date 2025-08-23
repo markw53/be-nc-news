@@ -1,14 +1,15 @@
-module.exports = [
+// db/data/test-data/topics.js
+export default [
   {
+    slug: 'mitch',
     description: 'The man, the Mitch, the legend',
-    slug: 'mitch'
   },
   {
+    slug: 'cats',
     description: 'Not dogs',
-    slug: 'cats'
   },
   {
+    slug: 'paper',
     description: 'what books are made of',
-    slug: 'paper'
-  }
+  },
 ];

@@ -1,4 +1,13 @@
-exports.articleData = require('./articles.js');
-exports.commentData = require('./comments.js');
-exports.topicData = require('./topics.js');
-exports.userData = require('./users.js');
+// db/data/test-data/index.js
+
+import articleData from './articles.js';
+import commentData from './comments.js';
+import topicData from './topics.js';
+import userData from './users.js';
+
+export {
+  articleData,
+  commentData,
+  topicData,
+  userData,
+};
