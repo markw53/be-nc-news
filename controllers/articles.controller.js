@@ -59,6 +59,23 @@ export const patchArticle = (req, res, next) => {
     });
 };
 
+// ✅ PATCH /api/articles/:article_id/votes
+export const patchArticleVotes = (req, res, next) => {
+  const { article_id } = req.params;
+  const { inc_votes } = req.body;
+
+  if (typeof inc_votes !== "number") {
+    return res.status(400).send({ msg: "bad request" });
+  }
+
+  updateArticle(article_id, { inc_votes })  // model must handle increment
+    .then((article) => {
+      if (!article) return res.status(404).send({ msg: "Article not found" });
+      res.status(200).send({ article });
+    })
+    .catch(next);
+};
+
 // ✅ POST /api/articles
 export const postArticle = (req, res, next) => {
   const newArticle = req.body;

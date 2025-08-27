@@ -3,8 +3,26 @@ import {
   insertComment,
   checkArticleExists,
   removeComment,
-  patchCommentVotes,
+  patchCommentVotes as patchCommonVotesModel,
 } from "../models/comments-models.js";
+
+export const patchCommentVotes = (req, res, next) => {
+  const { comment_id } = req.params;
+  const { inc_votes } = req.body;
+
+  if (typeof inc_votes !== "number") {
+    return res.status(400).send({ msg: "bad request" });
+  }
+
+  patchCommentVotesModel(comment_id, inc_votes)   // now safe
+    .then(updatedComment => {
+      if (!updatedComment) {
+        return res.status(404).send({ msg: "Comment not found" });
+      }
+      res.status(200).send({ comment: updatedComment });
+    })
+    .catch(next);
+};
 
 export const getCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;

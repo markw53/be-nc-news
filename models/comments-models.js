@@ -1,5 +1,6 @@
 // models/comments-models.js
-import db from "../db/firestoreUtils.js";
+import db from "../db/firebase";
+import { FieldValue } from "firebase-admin/firestore";
 
 /**
  * Get comments for a given article_id
@@ -105,23 +106,31 @@ export const removeComment = async (comment_id) => {
 };
 
 /**
- * Patch (increment/decrement) votes on a comment
+ * PATCH - Update votes on a comment (increment/decrement)
  */
 export const patchCommentVotes = async (comment_id, inc_votes) => {
-  if (typeof inc_votes !== "number") {
-    throw { status: 400, msg: "bad request" };
+  try {
+    if (typeof inc_votes !== "number") {
+      const err = new Error("Invalid vote increment");
+      err.status = 400;
+      throw err;
+    }
+
+    const commentRef = db.collection("comments").doc(comment_id);
+    const commentDoc = await commentRef.get();
+
+    if (!commentDoc.exists) {
+      return null; // controller will turn this into 404
+    }
+
+    await commentRef.update({
+      votes: FieldValue.increment(inc_votes),
+    });
+
+    // fetch updated doc
+    const updatedDoc = await commentRef.get();
+    return { id: updatedDoc.id, ...updatedDoc.data() };
+  } catch (err) {
+    throw err;
   }
-
-  const ref = db.collection("comments").doc(comment_id);
-  const snap = await ref.get();
-
-  if (!snap.exists) {
-    throw { status: 404, msg: "Comment not found" };
-  }
-
-  const currentVotes = snap.data().votes || 0;
-  await ref.update({ votes: currentVotes + inc_votes });
-
-  const updatedSnap = await ref.get();
-  return updatedSnap.data();
 };

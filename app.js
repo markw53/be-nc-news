@@ -8,38 +8,39 @@ const endpoints = JSON.parse(
   fs.readFileSync(new URL("./endpoints.json", import.meta.url))
 );
 
-// Import controllers
-import {
-  getTopics,
-  postTopic,
-} from "./controllers/topics.controller.js";
+// ------------------- IMPORT CONTROLLERS -------------------
 
+// Topics
+import { getTopics, postTopic } from "./controllers/topics.controller.js";
+
+// Articles
 import {
   getArticles,
   getArticleById,
   postArticle,
+  patchArticle,
   patchArticleVotes,
   deleteArticleById,
-  postComment,
 } from "./controllers/articles.controller.js";
 
+// Comments
 import {
+  getCommentsByArticleId,
+  postComment,
   patchCommentVotes,
   deleteComment,
 } from "./controllers/comments.controller.js";
 
-import {
-  getUsers,
-  getUserByUsername,
-} from "./controllers/users.controller.js";
+// Users
+import { getUsers, getUserByUsername } from "./controllers/users.controller.js";
 
 const app = express();
 
-// Middleware
+// ------------------- MIDDLEWARE -------------------
 app.use(cors());
 app.use(express.json());
 
-// Root -> API endpoints list
+// ------------------- ROOT ENDPOINT -------------------
 app.get("/api", (req, res) => {
   res.status(200).send({ endpoints });
 });
@@ -52,27 +53,26 @@ app.post("/api/topics", postTopic);
 app.get("/api/articles", getArticles);
 app.get("/api/articles/:article_id", getArticleById);
 app.post("/api/articles", postArticle);
-app.patch("/api/articles/:article_id", patchArticleVotes);
+app.patch("/api/articles/:article_id", patchArticle);
+app.patch("/api/articles/:article_id/votes", patchArticleVotes);
 app.delete("/api/articles/:article_id", deleteArticleById);
 
-// Comments nested under articles
-app.get("/api/articles/:article_id/comments", getArticleComments);
-app.post("/api/articles/:article_id/comments", postComment);
-
 // ------------------- COMMENTS -------------------
-app.patch("/api/comments/:comment_id", patchCommentVotes);
+app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
+app.post("/api/articles/:article_id/comments", postComment);
+app.patch("/api/comments/:comment_id/votes", patchCommentVotes);
 app.delete("/api/comments/:comment_id", deleteComment);
 
 // ------------------- USERS -------------------
 app.get("/api/users", getUsers);
 app.get("/api/users/:username", getUserByUsername);
 
-// ------------------- 404 Handler for Wrong Paths -------------------
+// ------------------- 404 Handler -------------------
 app.all("/*", (req, res) => {
   res.status(404).send({ msg: "Not Found" });
 });
 
-// ------------------- Error Handling -------------------
+// ------------------- ERROR HANDLING -------------------
 app.use(errorHandler);
 
 export default app;

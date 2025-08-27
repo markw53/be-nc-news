@@ -1,5 +1,5 @@
 // models/articles-models.js
-import db from "../db/firestoreUtils.js";
+import db from "../db/firebase";
 
 // ✅ 1. Get article by ID, including comment count
 export const selectArticleById = async (article_id) => {

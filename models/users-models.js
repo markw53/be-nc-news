@@ -1,5 +1,5 @@
 // models/users-models.js
-import db from "../db/firestoreUtils.js";
+import db from "../db/firebase";
 
 /**
  * Get all users
