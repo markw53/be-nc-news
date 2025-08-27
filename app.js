@@ -20,7 +20,6 @@ import {
   postArticle,
   patchArticleVotes,
   deleteArticleById,
-  getArticleComments,
   postComment,
 } from "./controllers/articles.controller.js";
 

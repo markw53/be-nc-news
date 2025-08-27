@@ -1,21 +1,20 @@
-const { getTopics, insertTopic } = require('../models/topic-models');
+// Renaming model import to avoid clash
+import { getTopics as selectTopics, insertTopic } from '../models/topic-models.js';
 
-exports.getTopicsController = (req, res, next) => {
-    getTopics()
-    .then((topics) => {
-        res.status(200).send({ topics });
-    })
-    .catch((err) => {
-        next(err);
-    });
+export const getTopics = (req, res, next) => {
+    selectTopics()
+        .then((topics) => {
+            res.status(200).send({ topics });
+        })
+        .catch(next);
 };
 
-exports.addTopic = (req, res, next) => {
+export const postTopic = (req, res, next) => {
     const { slug, description } = req.body;
 
     insertTopic(slug, description)
         .then((topic) => {
             res.status(201).send({ topic });
         })
-        .catch(next); 
+        .catch(next);
 };

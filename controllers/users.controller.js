@@ -1,6 +1,6 @@
-const { selectUsers, selectUserByUsername } = require('../models/users-models');
+import { selectUsers, selectUserByUsername } from '../models/users-models.js';
 
-exports.getUsers = (req, res, next) => {
+export const getUsers = (req, res, next) => {
     selectUsers()
     .then((users) => {
         res.status(200).send({ users });
@@ -10,7 +10,7 @@ exports.getUsers = (req, res, next) => {
     });
 };
 
-exports.getUsersByUsername = (req, res, next) => {
+export const getUserByUsername = (req, res, next) => {
     const { username } = req.params;
 
     selectUserByUsername(username)

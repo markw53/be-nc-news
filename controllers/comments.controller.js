@@ -1,12 +1,12 @@
-const {
+import {
   selectCommentsByArticleId,
   insertComment,
   checkArticleExists,
   removeComment,
   patchCommentVotes,
-} = require("../models/comments-models");
+} from "../models/comments-models.js";
 
-exports.getCommentsByArticleId = (req, res, next) => {
+export const getCommentsByArticleId = (req, res, next) => {
   const { article_id } = req.params;
   const { limit = 10, p = 1 } = req.query;
 
@@ -19,7 +19,7 @@ exports.getCommentsByArticleId = (req, res, next) => {
     });
 };
 
-exports.postComment = (req, res, next) => {
+export const postComment = (req, res, next) => {
   const { article_id } = req.params;
   const commentInput = req.body;
 
@@ -38,7 +38,7 @@ exports.postComment = (req, res, next) => {
     });
 };
 
-exports.deleteComment = (req, res, next) => {
+export const deleteComment = (req, res, next) => {
   const { comment_id } = req.params;
 
   if (isNaN(comment_id)) {
@@ -54,7 +54,7 @@ exports.deleteComment = (req, res, next) => {
     });
 };
 
-exports.updateCommentVotes = (req, res, next) => {
+export const updateCommentVotes = (req, res, next) => {
   const { comment_id } = req.params;
   const { inc_votes } = req.body;
 

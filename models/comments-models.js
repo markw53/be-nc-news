@@ -1,5 +1,5 @@
 // models/comments-models.js
-import db from "../firebase.js";
+import db from "../db/firestoreUtils.js";
 
 /**
  * Get comments for a given article_id
