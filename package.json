@@ -9,6 +9,7 @@
     "start": "node app.js",
     "test": "jest --watchAll",
     "seed": "node db/seed.js",
+    "smoketest": "node smoketest.js",
     "prepare": "husky install"
   },
   "repository": {

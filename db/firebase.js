@@ -1,11 +1,11 @@
+// db/firebase.js
 import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import dotenv from "dotenv";
-import serviceAccount from "../serviceAccountKey.json";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const serviceAccount = require("../serviceAccountKey.json");
 
-dotenv.config();
-
-// Initialize Firebase Admin App
+// ✅ Initialize Firebase Admin with service account JSON
 const app = initializeApp({
   credential: cert(serviceAccount),
 });
